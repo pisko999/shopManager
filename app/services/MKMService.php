@@ -99,9 +99,11 @@ class MKMService
         return $this->call("stock/article/" . $idArticle);
     }
 
-    public function getStock()
+    public function getStock($starting = null)
     {
-        return $this->call("stock");
+        if ($starting == null)
+            return $this->call("stock");
+        return $this->call("stock/" . $starting);
     }
 
     public function getPriceGuide()
@@ -116,9 +118,10 @@ class MKMService
 //received or 8
 //lost or 32
 //cancelled or 128
-    public function getSellerOrders($state)
+    public function getSellerOrders($state, $start = null)
     {
-        return $this->call("orders/1/" . $state);
+        $this->isStatic = true; //Todo: remove after testing
+        return $this->call("orders/1/" . $state . ($start != null? '/' . $start: ''));
     }
 
     public function getProductList()
@@ -129,7 +132,12 @@ class MKMService
 
     public function saveProductList()
     {
-        $productListCoded = $this->getProductList()->productsfile;
+        $response = $this->getProductList();
+
+        if (!isset($response->productsfile))
+            return false;
+
+        $productListCoded = $response->productsfile;
 
         $productList = base64_decode($productListCoded);
         $productlistCSV = gzdecode($productList);
@@ -137,6 +145,29 @@ class MKMService
 
         return;
     }
+
+    public function getStockFile()
+    {
+        $this->isStatic = true;
+        return $this->call("stock/file");
+    }
+
+    public function saveStockFile()
+    {
+        $response = $this->getStockFile();
+
+        if (!isset($response->stock))
+            return false;
+
+        $stockFileCoded = $response->stock;
+
+        $stockFile = base64_decode($stockFileCoded);
+        $stockFileCSV = gzdecode($stockFile);
+        Storage::put('MKMResponses/stockFile.csv', $stockFileCSV);
+
+        return true;
+    }
+
 
     public function addToStock($idProduct, $count, $price, $condition = "MT", $language = "EN", $comments = "", $isFoil = "false", $isSigned = "false", $isAltered = "false", $isPlayset = "false")
     {
@@ -224,7 +255,7 @@ class MKMService
 
             if (in_array($path . '/' . $filename, Storage::files($path))) {
                 $responseFile = json_decode(Storage::get($path . '/' . $filename));
-                if($responseFile != null) {
+                if ($responseFile != null) {
                     \Debugbar::info("took from localhost");
                     return $responseFile;
                 }

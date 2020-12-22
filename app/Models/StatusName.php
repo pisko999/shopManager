@@ -4,14 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Categories extends Model
+class StatusName extends Model
 {
     protected $fillable = ['id', 'name'];
-
     public $timestamps = false;
 
-    public function all_products(){
-        return $this->belongsToMany('App\Models\AllProducts');
+    public function Statuses(){
+        return $this->belongsToMany('App\Models\Status');
     }
-
 }

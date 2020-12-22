@@ -10,7 +10,8 @@ class Cmc extends Model
 
     public $timestamps = false;
 
-    public function Cards(){
+    public function Cards()
+    {
         return $this->belongsToMany('\App\Models\Cards');
     }
 }

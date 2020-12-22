@@ -24,9 +24,9 @@ class Card extends Model
     public $timestamps = false;
     public $incrementing = false;
 
-    public function Product()
+    public function product()
     {
-        return $this->belongsTo('\App\Models\AllProduct');
+        return $this->belongsTo('\App\Models\AllProduct', 'id','id');
     }
 
     public function CardFaces(){
@@ -55,7 +55,7 @@ class Card extends Model
         return $this->belongsToMany('\App\Models\StaticAbility');
     }
 
-    public function Colors(){
+    public function colors(){
         return $this->belongsToMany('\App\Models\Color');
     }
 
@@ -89,5 +89,14 @@ class Card extends Model
 
     public function Rarity(){
         return $this->belongsTo('\App\Models\Rarity');
+    }
+
+    public function expansion(){
+        return $this->Product->expansion();
+    }
+
+    public function stock()
+    {
+        return $this->belongsTo('\App\Models\Stock', 'id', 'all_product_id');
     }
 }

@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateEvaluationsTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('evaluations', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedTinyInteger('evaluation_grade');
+            $table->unsignedTinyInteger('item_description');
+            $table->unsignedTinyInteger('packaging');
+            $table->unsignedTinyInteger('speed')->nullable();
+            $table->string('comment',1024);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('evaluations');
+    }
+}

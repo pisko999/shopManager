@@ -46,4 +46,11 @@ class Expansion extends Model
         return $this->AllCards()->where('added',false);
     }
 
+    public function link($edition){
+        $this->ScryfallEditions()->attach($edition);
+        //$this->added = false;
+        $this->type = $edition->setType;
+        $this->save();
+    }
+
 }

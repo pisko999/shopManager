@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Rarity extends Model
 {
-    protected $fillable = ['id', 'name'];
+    protected $fillable = ['id', 'name', 'sign'];
 
     public $timestamps = false;
 
