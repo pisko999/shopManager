@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Repositories\CardRepositoryInterface;
 use App\Repositories\ExpansionRepositoryInterface;
 use App\Repositories\StockRepositoryInterface;
-use App\services\messagerieService;
+use App\Services\messagerieService;
 use App\Services\MKMService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;

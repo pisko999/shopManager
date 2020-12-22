@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Category;
 use App\Models\Stock;
 use App\Repositories\StockRepositoryInterface;
-use App\services\messagerieService;
+use App\Services\messagerieService;
 use App\Services\MKMService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
