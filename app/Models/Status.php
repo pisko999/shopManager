@@ -14,6 +14,7 @@ class Status extends Model
     }
 
     public function Status(){
+        //return $this->belongsTo('App\Models\StatusName','status_id','id');
         return \App\Objects\Status::getStatus($this->status_id);
     }
 }

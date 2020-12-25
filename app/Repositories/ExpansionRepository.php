@@ -207,5 +207,8 @@ class ExpansionRepository extends ModelRepository implements ExpansionRepository
         });
     }
 
+    public function getByMKMId($id){
+        return $this->model->where('idMKM',$id)->first();
+    }
 
 }

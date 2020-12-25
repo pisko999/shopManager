@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use http\Env\Request;
 use Illuminate\Database\Eloquent\Model;
 
 class Expansion extends Model
@@ -32,6 +33,16 @@ class Expansion extends Model
 
     public function AllCards(){
         return $this->AllProducts()->where('idCategory',1);
+    }
+
+    public function AllCardsWithRelationsPaginate(){
+        return $this->AllProducts()
+            ->where('idCategory',1)
+            ->orderByRaw('LENGTH(MKMCollectorNumber)', 'ASC')
+            ->orderBy('MKMCollectorNumber')
+            ->with('card','stock','image','card.stock','card.rarity')
+            ->paginate(50)
+            ->appends(request()->only('id', 'foils'));
     }
 
     public function CardsCount(){

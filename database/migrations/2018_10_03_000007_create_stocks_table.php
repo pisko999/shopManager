@@ -30,6 +30,7 @@ class CreateStocksTable extends Migration
             $table->string('comments')->nullable(); //comment from mkm
             $table->string('idArticleMKM')->nullable(); //idArticle from mkm
             $table->string('modifiedMKM')->nullable(); //idArticle from mkm
+
             $table->foreign('language')->references('id')->on('languages');
             $table->foreign('all_product_id')->references('id')->on('all_products');
             $table->timestamps();

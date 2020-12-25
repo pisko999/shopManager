@@ -18,6 +18,15 @@ Route::get('/', function () {
 });
 
 Auth::routes();
+Route::get('/BuyCommand', ['as'=>'buyCommand.index', 'uses' => 'BuyCommandController@index']);
+Route::get('/BuyCommand/{id}', ['as'=>'buyCommand.show', 'uses' => 'BuyCommandController@show']);
+Route::get('/BuyCommandEdition', ['as'=>'buyCommandEditionSelect', 'uses' => 'BuyCommandController@editionSelect']);
+Route::get('/BuyCommandEditionEdit', ['as'=>'buyCommandEditionGet', 'uses' => 'BuyCommandController@editionGet']);
+Route::post('/BuyCommandEditionEdit', ['as'=>'buyCommandEditionSave', 'uses' => 'BuyCommandController@editionSave']);
+Route::post('/BuyCommand/{id}/make', ['as'=>'buyCommandMake', 'uses' => 'BuyCommandController@editionMake']);
+
+Route::post('/BuyItemAdd', ['as'=>'buyItem.add', 'uses' => 'BuyItemController@add']);
+Route::post('/BuyItemUpdate/{id}', ['as'=>'buyItem.update', 'uses' => 'BuyItemController@update']);
 
 Route::get('/home', 'HomeController@index')->name('home');
 Route::get('/getMKMStock', ['as' => 'getMKMStock', 'uses' => 'stockController@getMKMStock']);

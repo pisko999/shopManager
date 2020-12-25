@@ -13,7 +13,7 @@ abstract class ModelRepository implements ModelRepositoryInterface
 {
     protected $model;
 
-    public function getPaginate($n)
+    public function getPaginate($n = 25)
     {
         return $this->model->paginate($n);
     }

@@ -15,6 +15,14 @@ class AppServiceProvider extends ServiceProvider
     {
 
         $this->app->bind(
+            'App\Repositories\BuyItemRepositoryInterface',
+            'App\Repositories\BuyItemRepository'
+        );
+        $this->app->bind(
+            'App\Repositories\BuyCommandRepositoryInterface',
+            'App\Repositories\BuyCommandRepository'
+        );
+        $this->app->bind(
             'App\Repositories\StockRepositoryInterface',
             'App\Repositories\StockRepository'
         );

@@ -38,4 +38,11 @@ class User extends Authenticatable
     public function Commands(){
         return $this->hasMany('App\Models\Commnads');
     }
+
+    public function BuyCommands(){
+        return $this->hasMany('App\Models\BuyCommand', 'id_client','id');
+    }
+    public function getActualBuyCommand(){
+        return $this->BuyCommands()->where('id_status', 2)->first();
+    }
 }
