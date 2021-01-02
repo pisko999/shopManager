@@ -13,7 +13,7 @@
     <script src="{{ asset('js/app.js') }}" defer></script>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-    @yield('scripts')
+@yield('scripts')
 
 <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -40,6 +40,13 @@
             <a class="navbar-brand" href="{{ url('/') }}">
                 {{ config('app.name', 'Laravel') }}
             </a>
+            <a class="navbar-brand" href="{{ url('/') }}">
+                Sandbox: {{ env('APP_SANDBOX') ? 'true':'false' }}
+            </a>
+            <a class="navbar-brand" href="{{ url('/') }}">
+                Database: {{ env('DB_HOST') . '/' . env('DB_DATABASE') }}
+            </a>
+
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
                     aria-controls="navbarSupportedContent" aria-expanded="false"
                     aria-label="{{ __('Toggle navigation') }}">
@@ -131,6 +138,13 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="{!! route('buyCommand.actual')!!}">
+                            <div>
+                                actual re-buy
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{!! route('buyCommandEditionSelect')!!}">
                             <div>
                                 Re-buy by edition
@@ -141,6 +155,13 @@
                         <a href="{!! route('stockingShowGet')!!}">
                             <div>
                                 stock list
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{!! route('stockingList')!!}">
+                            <div>
+                                stocking
                             </div>
                         </a>
                     </li>

@@ -33,6 +33,9 @@ class MKMService
     private $isStatic;
     private $languages = array('cz', 'EN', 'FR', 'DE', 'ES', 'IT', 'CH', 'JA', 'PO', 'RU', 'KO', 'TCH');
 
+    private $dataBag;
+    private $dataBagCPT = 0;
+
     /*
      *    1 - English
      *    2 - French
@@ -52,6 +55,40 @@ class MKMService
         if (env("APP_SANDBOX")) {
             $this->baseUrl = $this->baseUrlSandbox;
         }
+        $this->dataBag = array();
+    }
+
+    public function addToDataBag($idProduct, $count, $price, $condition = "MT", $language = "EN", $comments = "", $isFoil = "false", $isSigned = "false", $isAltered = "false", $isPlayset = "false")
+    {
+        if ($this->dataBagCPT >= 100)
+            return false;
+
+        $this->dataBagCPT++;
+
+        if (is_numeric($language))
+            $idLanguage = $language;
+        else
+            $idLanguage = array_search(strtoupper($language), $this->languages);
+
+        $data = new product();
+
+        $data->idProduct = $idProduct;
+        $data->idLanguage = $idLanguage;
+        $data->comments = $comments;
+        $data->count = $count;
+        $data->price = $price;
+        $data->condition = $condition;
+        $data->isFoil = $isFoil;
+        $data->isSigned = $isSigned;
+        $data->isAltered = $isAltered;
+        $data->isPlayset = $isPlayset;
+
+        array_push($this->dataBag, $data);
+    }
+
+    public function addToStockFromDataBag()
+    {
+        return $this->call("stock", "POST", $this->dataBag);
     }
 
     /*
@@ -121,7 +158,7 @@ class MKMService
     public function getSellerOrders($state, $start = null)
     {
         $this->isStatic = true; //Todo: remove after testing
-        return $this->call("orders/1/" . $state . ($start != null? '/' . $start: ''));
+        return $this->call("orders/1/" . $state . ($start != null ? '/' . $start : ''));
     }
 
     public function getProductList()
@@ -171,8 +208,11 @@ class MKMService
 
     public function addToStock($idProduct, $count, $price, $condition = "MT", $language = "EN", $comments = "", $isFoil = "false", $isSigned = "false", $isAltered = "false", $isPlayset = "false")
     {
-        $idLanguage = array_search(strtoupper($language), $this->languages);
-        \Debugbar::info($idLanguage);
+        if (is_numeric($language))
+            $idLanguage = $language;
+        else
+            $idLanguage = array_search(strtoupper($language), $this->languages);
+
         $data = new product();
 
         $data->idProduct = $idProduct;
@@ -261,7 +301,7 @@ class MKMService
                 }
             }
         }
-
+//$t = time();
         $this->init($command, $method);
         $this->setParams();
         $this->setMethodAndUrl();
@@ -269,15 +309,17 @@ class MKMService
         $this->sign();
         $this->getHeader();
         $xmlData = null;
-
         if ($data != null)
-
-            $xmlData = $data->getXml();
+            if (count($this->dataBag)>0)
+                $xmlData = $this->getXMLFromDataBag();
+            else
+                $xmlData = $data->getXml();
+        //var_dump($xmlData);
 
         //\Debugbar::info($xmlData);
 
         $response = $this->exec($xmlData);
-
+//var_dump(time()- $t);
         if ($this->isStatic) {
             $p = '';
             foreach ($pathArray as $dir) {
@@ -496,6 +538,16 @@ class MKMService
         return rand(1000000000000, 9999999999999);
     }
 
+    private function getXMLFromDataBag()
+    {
+        $xml = '<?xml version="1.0" encoding="UTF-8" ?><request>';
+        foreach ($this->dataBag as $data)
+            $xml .= $data->getPureXML();
+        $xml .= '</request>';
+
+        return $xml;
+    }
+
 }
 
 
@@ -504,16 +556,19 @@ class baseArticle
     public $idArticle;
     public $count;
 
+    public function getPureXML()
+    {
+        return '<article>
+        <idArticle>' . $this->idArticle . '</idArticle>
+        <count>' . $this->count . '</count>
+    </article>';
+    }
+
     public function getXML()
     {
 
         $s = '<?xml version="1.0" encoding="UTF-8" ?>
-<request>
-    <article>
-        <idArticle>' . $this->idArticle . '</idArticle>
-        <count>' . $this->count . '</count>
-    </article>
-</request>';
+<request>' . $this->getPureXML() . '</request>';
         //echo $s;
         return $s;
     }
@@ -530,11 +585,9 @@ class article extends baseArticle
     public $isAltered = "false";
     public $isPlayset = "false";
 
-    public function getXML()
+    public function getPureXML()
     {
-
-        return '<?xml version="1.0" encoding="UTF-8" ?>
-<request>
+        return '
     <article>
         <idArticle>' . $this->idArticle . '</idArticle>
         <idLanguage>' . $this->idLanguage . '</idLanguage>
@@ -546,8 +599,15 @@ class article extends baseArticle
         <isSigned>' . $this->isSigned . '</isSigned>
         <isAltered>' . $this->isAltered . '</isAltered>
         <isPlayset>' . $this->isPlayset . '</isPlayset>
-    </article>
-</request>';
+    </article>';
+    }
+
+    public function getXML()
+    {
+
+        return '<?xml version="1.0" encoding="UTF-8" ?><request>' .
+            $this->getPureXML() .
+            '</request>';
     }
 }
 
@@ -555,11 +615,9 @@ class product extends article
 {
     public $idProduct;
 
-    public function getXML()
+    public function getPureXML()
     {
-        return '<?xml version="1.0" encoding="UTF-8" ?>
-<request>
-    <article>
+        return '<article>
         <idProduct>' . $this->idProduct . '</idProduct>
         <idLanguage>' . $this->idLanguage . '</idLanguage>
         <comments>' . $this->comments . '</comments>
@@ -570,7 +628,14 @@ class product extends article
         <isSigned>' . $this->isSigned . '</isSigned>
         <isAltered>' . $this->isAltered . '</isAltered>
         <isPlayset>' . $this->isPlayset . '</isPlayset>
-    </article>
-</request>';
+        </article>';
+    }
+
+    public function getXML()
+    {
+        return '<?xml version="1.0" encoding="UTF-8" ?>' .
+            '<request>' .
+            $this->getPureXML() .
+            '</request>';
     }
 }

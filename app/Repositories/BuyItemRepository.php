@@ -39,30 +39,9 @@ class BuyItemRepository extends ModelRepository implements BuyItemRepositoryInte
         if (!$item)
             return false;
 
-            $item->delete();
+        $item->delete();
 
         return -1;
-    }
-
-    public function increase($id, $data)
-    {
-
-        $item = $this->model->find($id);
-
-        if (!$item)
-            return "false3";
-
-        $item->quantity += $data['quantity'];
-        if ($item->quantity <= 0) {
-            $quantity = 0;
-            $item->delete();
-        }
-        else {
-            $quantity = $item->quantity;
-            $item->save();
-        }
-
-        return $quantity;
     }
 
     public function decrease($id, $data)
@@ -71,16 +50,49 @@ class BuyItemRepository extends ModelRepository implements BuyItemRepositoryInte
         $item = $this->model->find($id);
 
         if (!$item)
-            return "false2";
+            return "false3";
 
         $item->quantity -= $data['quantity'];
+        if ($item->quantity <= 0) {
+            $quantity = 0;
+            $item->delete();
+        } else {
+            $quantity = $item->quantity;
+            $item->save();
+        }
+
+        return $quantity;
+    }
+
+    public function increase($id, $data)
+    {
+
+        $item = $this->model->find($id);
+
+        if (!$item)
+            return "false2";
+
+        $item->quantity += $data['quantity'];
         if ($item->quantity > 20)
             $item->quantity = 20;
-        if($item->quantity <=0)
+        if ($item->quantity <= 0)
             return $this->remove($id);
         $item->save();
 
         return $item->quantity;
+    }
+
+    public function getByStocking(BuyCommand $buyCommand, $stocking){
+        return $buyCommand->Items()->whereHas('stock', function ($q) use ($stocking){
+            switch ($stocking){
+                case 0:
+                    return $q->where('price', '<', 0.98);
+                case 1:
+                    return $q->whereBetween('price',  [0.97, 1.99]);
+                case 2:
+                    return $q->where('price', '>', 1.98);
+            }
+        })->get();
     }
 
     //private
@@ -97,4 +109,6 @@ class BuyItemRepository extends ModelRepository implements BuyItemRepositoryInte
                 (isset($data['state']) ? $value->state == $data['state'] : 1);
         })->first();
     }
+
+
 }

@@ -9,7 +9,7 @@
                 <div class="card-body">
                     <table width="100%">
                         <tr>
-                            <td style="border: black 1px solid">@if($buyCommand->payment != null)@include('partial.payment',['payment' => $command->payment])@endif</td>
+                            <td style="border: black 1px solid"></td>
                             <td style="border: black 1px solid">Order : {{$buyCommand->id}}</td>
                         </tr>
                         <tr>
@@ -19,16 +19,14 @@
                             <?php $printable = false;?>
                         @endif
                         <tr style="border: black 1px solid">
-                            <td colspan="2">@include('partial.buyItems',['command' => $buyCommand, 'printable' => $printable])</td>
+                            <td colspan="2">@include('partial.showOverQuantity',['items' => $items, 'buyCommand' => $buyCommand])</td>
                         </tr>
                     </table>
-                    {{Form::open(['route' => ['buyCommand.make', 'id' => $buyCommand->id]])}}
+                    {{Form::open(['route' => ['buyCommandMake', 'id' => $buyCommand->id]])}}
                     {{Form::text('value', $buyCommand->initial_value)}}
                     {{Form::submit('Submit')}}
                     {{Form::close()}}
-                    <a href="{{route('buyCommand.checkQuantity', $buyCommand->id)}}"><button class="btn">Check quantity</button></a>
-                    <a href="{{route('buyCommand.close', $buyCommand->id)}}"><button class="btn">Close</button></a>
-                    <a href="{{route('buyCommand.showStocking', $buyCommand->id)}}"><button class="btn">Stocking</button></a>
+                    <a href="{{route('buyCommandClose', $buyCommand->id)}}"><button class="btn">Close</button></a>
                 </div>
             </div>
         </div>

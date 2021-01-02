@@ -11,9 +11,11 @@ namespace App\Repositories;
 
 use App\Http\Requests\ItemAddRequest;
 use App\Models\Command;
+use App\Models\Status;
 use http\Env\Request;
 
-interface StatusNamesRepositoryInterface extends ModelRepositoryInterface
+interface StatusRepositoryInterface extends ModelRepositoryInterface
 {
-    public function getOrCreateByName($name);
+    public function new($name);
+    public function updateStatus(Status $status,$name);
 }

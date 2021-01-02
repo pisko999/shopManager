@@ -26,6 +26,7 @@ class CreateBuyItemsTable extends Migration
             $table->boolean('playset')->nullable();
             $table->boolean('signed')->nullable();
             $table->boolean('altered')->nullable();
+            $table->boolean('added')->default(false);
 
             $table->foreign('id_product')->references('id')->on('all_products');
             $table->foreign('id_stock')->references('id')->on('stocks');

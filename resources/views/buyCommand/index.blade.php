@@ -50,7 +50,7 @@
                                     </td>
                                     <td>
                                         {{--                                        <a href="{!! route('payment.show', ['payment_id' => $command->payment_id])!!}">--}}
-                                                                                    {{\App\Objects\Status::getStatus($command->id_status)}}<!--$command->status->name->name-->
+                                                                                    {{$command->status->status->name}}<!--$command->status->name->name-->
                                         {{--                                        </a>--}}
                                     </td>
                                     @if(!Auth::guest() && Auth::user()->role >= 4)

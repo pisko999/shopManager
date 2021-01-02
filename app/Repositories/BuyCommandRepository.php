@@ -14,9 +14,12 @@ use App\Models\Language;
 
 class BuyCommandRepository extends ModelRepository implements BuyCommandRepositoryInterface
 {
-    public function __construct(BuyCommand $buyCommand)
+    private $statusRepository;
+
+    public function __construct(BuyCommand $buyCommand, StatusRepositoryInterface $statusRepository)
     {
         $this->model = $buyCommand;
+        $this->statusRepository = $statusRepository;
     }
 
     public function add($data)
@@ -25,7 +28,11 @@ class BuyCommandRepository extends ModelRepository implements BuyCommandReposito
     }
 
     public function new(){
-        $buyCommand = \Auth::user()->BuyCommands()->create();
+        $status = $this->statusRepository->new('rebuy');
+        \Debugbar::info($status);
+        $buyCommand = \Auth::user()->BuyCommands()->create(['id_status' => $status->id]);
+        \Debugbar::info($buyCommand);
+
         return $buyCommand;
     }
 
@@ -36,9 +43,17 @@ class BuyCommandRepository extends ModelRepository implements BuyCommandReposito
 
         foreach ($data as $key => $value){
             if(str_contains($key,'quantity') && $value != null && $value > 0)
-            $buyCommand->Items()->save(new BuyItem(['id_product' => substr($key,8),'price' => 0,'quantity' => $value]));
+            $buyCommand->Items()->save(new BuyItem(['id_product' => substr($key,8),'price' => 0,'quantity' => $value, 'isFoil' => $data['foils']]));
         }
         return true;
+    }
+
+    public function getClosed(){
+        return $this->model->whereHas('status',function ($q){
+            $q->whereHas('status', function ($q){
+                $q->where('name','=', 'closed');
+            });
+        })->get();
     }
 
 }

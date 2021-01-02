@@ -123,6 +123,12 @@ class ExpansionRepository extends ModelRepository implements ExpansionRepository
             ->orderBy('release_date', 'desc')
             ->get();
 
+
+        $extras = $this->model
+            ->select('idMKM', 'name')
+            ->where('name', 'like', '%extra%')
+            ->orderBy('release_date', 'desc')
+            ->get();
         $typesArray = array_merge($modern_types, ['masters', 'funny', 'masterpiece', 'draft_inovations', 'promo']);
 
         $others = $this->model
@@ -158,6 +164,8 @@ class ExpansionRepository extends ModelRepository implements ExpansionRepository
         foreach ($promos as $edition)
             $promosArray[$edition->idMKM] = $edition->name;
 
+        foreach ($extras as $edition)
+            $extrasArray[$edition->idMKM] = $edition->name;
         foreach ($others as $edition)
             $othersArray[$edition->idMKM] = $edition->name;
 
@@ -165,6 +173,8 @@ class ExpansionRepository extends ModelRepository implements ExpansionRepository
         $selectArray = array(0 => "All");
         if (isset($standartArray))
             $selectArray["standard"] = $standartArray;
+        if (isset($extrasArray))
+            $selectArray["extras"] = $extrasArray;
         if (isset($modernArray))
             $selectArray["modern"] = $modernArray;
         if (isset($legacyArray))

@@ -39,6 +39,10 @@ class AppServiceProvider extends ServiceProvider
             'App\Repositories\ItemRepository'
         );
         $this->app->bind(
+            'App\Repositories\StatusRepositoryInterface',
+            'App\Repositories\StatusRepository'
+        );
+        $this->app->bind(
             'App\Repositories\StatusNamesRepositoryInterface',
             'App\Repositories\StatusNamesRepository'
         );

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\BuyCommand;
 use App\Repositories\BuyCommandRepositoryInterface;
 use App\Repositories\ExpansionRepositoryInterface;
+use App\Repositories\StatusRepositoryInterface;
+use App\Services\ScryfallService;
 use Illuminate\Http\Request;
 
 class BuyCommandController extends Controller
@@ -98,6 +100,14 @@ class BuyCommandController extends Controller
         //
     }
 
+    public function showActual()
+    {
+        $buyCommand = \Auth::user()->getActualBuyCommand();
+        if (!$buyCommand)
+            $buyCommand = $this->buyCommandsRepository->new();
+        return $this->show($buyCommand->id);
+    }
+
     public function editionSelect(ExpansionRepositoryInterface $expansionRepository)
     {
         $editions = $expansionRepository->getArrayForSelect();
@@ -143,6 +153,7 @@ class BuyCommandController extends Controller
         }
         $links = $cards->render();
 
+
         return view('buyCommand.expansion', compact('expansion', 'cards', 'links'));
     }
 
@@ -155,20 +166,33 @@ class BuyCommandController extends Controller
         return $this->editionGet($expansionRepository, $request);
     }
 
-    public function editionMake($id, Request $request)
+    public function editionMake($id, Request $request, ScryfallService $scryfallService, StatusRepositoryInterface $statusRepository)
     {
+        \Debugbar::info($request->all());
         $buyCommand = $this->buyCommandsRepository->getById($id);
         if (!$buyCommand)
             return view('404');
         $total = 0;
         foreach ($buyCommand->items as $item) {
-            var_dump($item->product->stock);
-            if ($item->product->stock)
-                $item->priceProviz = $item->product->Stock()->orderBy('price')->first()->price;
-            else
-                $item->priceProviz = $item->card->usd_price != null ? $item->card->use_price * 1.1 : 0;
+            if ($item->product->stock->where('isFoil', $item->isFoil)->count() > 0)
+                $item->priceProviz = $item->product->stock->where('isFoil', $item->isFoil)->sortBy('price')->first()->price;
+            else {
+                if ($item->isFoil) {
+                    $item->priceProviz = $item->card->usd_price_foil;
+                } else {
+                    $item->priceProviz = $item->card->usd_price;
+                }
+            }
+            try {
+                if ($item->priceProviz == null || $item->priceProviz == 0)
+                    $item->priceProviz = $scryfallService->getCardByCardMarketId($item->id)->prices->usd . ($item->isFoil ? '_foil' : '');
+            } catch (\Exception $exception) {
+                $item->priceProviz = 0.16;
+            }
+
             $total += $item->quantity * $item->priceProviz;
 
+            //var_dump($item->priceProviz);
         }
         $perOne = $request->value / $total;
         foreach ($buyCommand->items as $item) {
@@ -177,8 +201,14 @@ class BuyCommandController extends Controller
             $item->save();
 
         }
+        $buyCommand->initial_value = round($request->value, 2);
+        $buyCommand->value = round($total, 2);
+        $buyCommand->save();
+
+        $statusRepository->updateStatus($buyCommand->status, "made");
 
         \Debugbar::info($request->all());
         return $this->show($id);
     }
+
 }

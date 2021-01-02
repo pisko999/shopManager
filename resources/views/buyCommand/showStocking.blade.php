@@ -7,28 +7,14 @@
 
 
                 <div class="card-body">
-                    <table width="100%">
-                        <tr>
-                            <td style="border: black 1px solid">@if($buyCommand->payment != null)@include('partial.payment',['payment' => $command->payment])@endif</td>
-                            <td style="border: black 1px solid">Order : {{$buyCommand->id}}</td>
-                        </tr>
-                        <tr>
-                            <td><br/><br/></td>
-                        </tr>
-                        @if(!isset($printable))
-                            <?php $printable = false;?>
-                        @endif
-                        <tr style="border: black 1px solid">
-                            <td colspan="2">@include('partial.buyItems',['command' => $buyCommand, 'printable' => $printable])</td>
-                        </tr>
-                    </table>
-                    {{Form::open(['route' => ['buyCommand.make', 'id' => $buyCommand->id]])}}
-                    {{Form::text('value', $buyCommand->initial_value)}}
-                    {{Form::submit('Submit')}}
-                    {{Form::close()}}
-                    <a href="{{route('buyCommand.checkQuantity', $buyCommand->id)}}"><button class="btn">Check quantity</button></a>
-                    <a href="{{route('buyCommand.close', $buyCommand->id)}}"><button class="btn">Close</button></a>
-                    <a href="{{route('buyCommand.showStocking', $buyCommand->id)}}"><button class="btn">Stocking</button></a>
+                    <h2>Album:</h2>
+                    @include('partial.buyCommand.showStocking',['items' => $album])
+                    <h2>Center:</h2>
+                    @include('partial.buyCommand.showStocking',['items' => $center])
+                    <h2>Box:</h2>
+                    @include('partial.buyCommand.showStocking',['items' => $box])
+
+                    <a href="{{route('buyCommand.show', $buyCommand->id)}}"><button class="btn">back</button></a>
                 </div>
             </div>
         </div>

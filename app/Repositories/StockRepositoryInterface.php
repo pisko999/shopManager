@@ -20,6 +20,9 @@ interface StockRepositoryInterface
     //public function whereInPaginate($list, $n);
 
     //public function getByProductIds($product_ids);
+
+    public function addFromBuy($item);
+
     public function addFromMKM($item);
 
     public function addFromCSV($item);

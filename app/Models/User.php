@@ -43,6 +43,8 @@ class User extends Authenticatable
         return $this->hasMany('App\Models\BuyCommand', 'id_client','id');
     }
     public function getActualBuyCommand(){
-        return $this->BuyCommands()->where('id_status', 2)->first();
+        return $this->BuyCommands()->whereHas('status', function ($q){
+            $q->where('status_id', '=', 1);
+        })->first();
     }
 }

@@ -12,4 +12,5 @@ interface BuyItemRepositoryInterface extends ModelRepositoryInterface
     public function remove($id);
     public function increase($id, $data);
     public function decrease($id, $data);
-}
+    public function getByStocking(BuyCommand $buyCommand, $stocking);
+    }

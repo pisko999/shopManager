@@ -18,9 +18,10 @@ class CreateBuyCommandsTable extends Migration
             $table->unsignedBigInteger('id_client');
             $table->unsignedBigInteger('id_storekeeper')->nullable();
             $table->unsignedBigInteger('id_payment')->nullable();
-            $table->unsignedBigInteger('id_status');
+            $table->unsignedBigInteger('id_status')->default(2);
             $table->string('comment')->default('');
-            $table->float('initial_value');
+            $table->float('initial_value')->default(0);
+            $table->float('value')->default(0);
 
             $table->timestamps();
 

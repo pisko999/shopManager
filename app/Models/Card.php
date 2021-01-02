@@ -33,7 +33,7 @@ class Card extends Model
         return $this->belongsToMany('\App\Models\CardFace');
     }
 
-    public function CardTypes()
+    public function Types()
     {
         return $this->belongsToMany('\App\Models\CardType');
     }

@@ -23,4 +23,11 @@ class StatusNamesRepository extends ModelRepository implements StatusNamesReposi
         $this->model = $statusName;
     }
 
+    public function getOrCreateByName($name)
+    {
+        //var_dump($name);
+
+        return $this->model->firstOrCreate(['name' => $name]);
+    }
+
 }

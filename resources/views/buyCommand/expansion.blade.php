@@ -15,7 +15,7 @@
                         <table style="align: center; width: 100%">
                             @foreach($cards as $card)
                                 <tr style="background: {{$card->background}}">
-                                    <td>{{$card->MKMCollectorNumber}}</td>
+                                    <td>{{$card->scryfallCollectorNumber}}</td>
                                     <td>{{$card->name}}</td>
                                     <td>{{$card->quantity}}</td>
                                     <td>{{Form::text('quantity'. $card->id,0,['id'=>'quantity'.$card->id])}}</td>
@@ -58,6 +58,9 @@
             }
 
 
+        });
+        $(document).ready(function() {
+            $('#chckButtons').focus();
         });
 
         $(document).on('click', '.btnDecrease', function (e) {

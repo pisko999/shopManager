@@ -41,6 +41,54 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
             return $items;
         }
     */
+    public function addFromBuy($item)
+    {
+        $stocks = $this->model->where('all_product_id', $item->id_product)->where('isFoil', $item->isFoil)->where('language', $item->id_language)->where('state',isset($item->condition)?$item->condition:"NM")->orderBy('price')->get();//TODO:add other criteria as signed
+        if ($stocks->count() == 0)
+            $stock = $this->newFromBuy($item);
+        else {
+            $stock = $stocks->first();
+            $stock->quantity += $item->quantity;
+
+            $quantity = 0;
+            foreach ($stocks as $stock)
+                $quantity += $stock->quantity;
+            if ($quantity > 20) {
+                $stock->quantity -= $quantity - 20;
+                $stock->save();
+                $stock->error = $quantity;
+            } else
+                $stock->save();
+
+
+        }
+
+        $item->Stock()->associate($stock)->save();
+
+        return $stock;
+    }
+
+    private function newFromBuy($item)
+    {
+        $price = $item->price * 1.6;
+        if($price < 0.16)
+            $price = 0.16;
+        $stocking = $price >= 1.98 ? 2 : ($price >= 0.98 ? 1 : 0);
+        return $this->model->create([
+            'all_product_id' => $item->id_product,
+            'initial_price' => $item->price,
+            'quantity' => $item->quantity,
+            'price' => $price,
+            'stock' => $stocking,
+            'language' => $item->id_language,
+            'isFoil' => $item->isFoil,
+            'signed' => $item->signed,
+            'playset' => $item->playset,
+            'altered' => $item->altered,
+            'state' => $item->state
+        ]);
+    }
+
     public function addFromMKM($item)
     {
         $lang = Language::firstOrCreate(['id' => $item->language->idLanguage], ['languageName' => $item->language->languageName]);
@@ -347,38 +395,39 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
         return $this->model->where('Quantity', '>', 0)->whereNotIn('idArticleMKM', $ids);
     }
 
-    public function differentUpdate(Stock $item,StockFileItem $mkmItem){
-$changed = collect();
-        if($item->all_product_id != $mkmItem->idProduct) {
+    public function differentUpdate(Stock $item, StockFileItem $mkmItem)
+    {
+        $changed = collect();
+        if ($item->all_product_id != $mkmItem->idProduct) {
             $changed->push(['type' => 'productError', $item->id]);
             return $changed;
         }
 
-        if($item->quantity != $mkmItem->amount){
+        if ($item->quantity != $mkmItem->amount) {
             $changed->push(['type' => 'quantity', [$item->id => $item->quantity - $item->amount]]);
             $item->quantity = $mkmItem->amount;
         }
 
-        if(floatval($item->price) != floatval($mkmItem->price)){
+        if (floatval($item->price) != floatval($mkmItem->price)) {
             $changed->push(['type' => 'price', [$item->id => floatval($item->price), $mkmItem->idArticle => floatval($mkmItem->price), 'equal' => floatval($item->price) != floatval($mkmItem->price)]]);
             $item->price = floatval($mkmItem->price);
         }
 
-        if($item->state != $mkmItem->condition){
+        if ($item->state != $mkmItem->condition) {
             $changed->push(['type' => 'state', [$item->id => $item->state]]);
             $item->state = $mkmItem->condition;
         }
 
-        if($item->comments != $mkmItem->comments){
+        if ($item->comments != $mkmItem->comments) {
             $changed->push(['type' => 'comments', [$item->id => $item->comments]]);
             $item->comments = $mkmItem->comments;
         }
 
-        if($item->on_sale != $mkmItem->onSale){
+        if ($item->on_sale != $mkmItem->onSale) {
             $changed->push(['type' => 'onSale', [$item->id => $item->on_sale]]);
             $item->on_sale = $mkmItem->onSale;
         }
-        if($changed->count() == 0)
+        if ($changed->count() == 0)
             return false;
 
         $item->save();

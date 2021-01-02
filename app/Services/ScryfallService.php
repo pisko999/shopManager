@@ -86,4 +86,8 @@ class ScryfallService
         return json_decode($this->call('cards', $id));
     }
 
+    public function getCardByCardMarketId($id)
+    {
+        return json_decode($this->call('cards/cardmarket', $id));
+    }
 }

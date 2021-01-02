@@ -23,6 +23,10 @@ class Stock extends Model
     {
         return $this->hasMany('App\Models\Item');
     }
+
+    public function BuyItems(){
+        return $this->hasMany('App\Models\BuyItem','id_stock','idS');
+    }
 /*
     public function addToMKM($p)
     {

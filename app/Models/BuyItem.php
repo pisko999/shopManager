@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BuyItem extends Model
 {
-    protected $fillable = ['id_product', 'id_buy_command', 'id_language', 'price','quantity','state','isFoil','playset','signed','altered'];
+    protected $fillable = ['id_product','id_stock', 'id_buy_command', 'id_language', 'price','quantity','state','isFoil','playset','signed','altered', 'added'];
     public $timestamps = false;
 
     public function Stock(){
