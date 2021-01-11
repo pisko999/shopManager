@@ -43,4 +43,16 @@ interface CommandRepositoryInterface
 
     public function getCommandsPaginate($type);
 
+    public function createFromMKM($data, $dateStock);
+
+    public function getByIdMKM($id);
+
+    public function getByType($type, $onlyMKM = false);
+
+    public function checkStatus($id, $data);
+
+    public function setSend($id);
+    public function acceptCancellation($id, $relistItems);
+    public function setTrackingNumber($id,$trackingNumber);
+
 }

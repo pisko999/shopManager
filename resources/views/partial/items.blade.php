@@ -51,8 +51,9 @@ if (!isset($items))
 
                 </td>
             @else
+
                 @if(!Auth::guest() && Auth::user()->role >= 4 && !$printable)
-                    <td>
+                    <td>{{--
                         {!! Form::open(['route' => 'command.removeItem', 'id' => 'form' . (isset($item->id)?$item->id : '')]) !!}
                         <input name="id" value="{{$item->id}}" hidden>
                         <select name="quantity" selectedIndex="0">
@@ -76,7 +77,7 @@ if (!isset($items))
 
                             {!! Form::close() !!}
                         @endif
-                    </td>
+                    --}}</td>
                 @endif
             @endif
         </tr>

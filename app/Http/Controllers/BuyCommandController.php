@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\BuyCommand;
+use App\Objects\Conditions;
 use App\Repositories\BuyCommandRepositoryInterface;
 use App\Repositories\ExpansionRepositoryInterface;
 use App\Repositories\StatusRepositoryInterface;
@@ -52,19 +53,17 @@ class BuyCommandController extends Controller
         //
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param \App\BuyCommand $buyCommand
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
         $buyCommand = $this->buyCommandsRepository->getById($id);
         if (!$buyCommand)
             return view('404');
-        return view('buyCommand.show', compact('buyCommand'));
+
+        $conditions = Conditions::getConditions();
+
+        return view('buyCommand.show', compact('buyCommand', 'conditions'));
     }
+
 
     /**
      * Show the form for editing the specified resource.

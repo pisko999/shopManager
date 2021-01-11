@@ -15,6 +15,34 @@ class AppServiceProvider extends ServiceProvider
     {
 
         $this->app->bind(
+            'App\Repositories\AddressRepositoryInterface',
+            'App\Repositories\AddressRepository'
+        );
+        $this->app->bind(
+            'App\Repositories\StockChangesRepositoryInterface',
+            'App\Repositories\StockChangesRepository'
+        );
+        $this->app->bind(
+            'App\Repositories\ComplaintRepositoryInterface',
+            'App\Repositories\ComplaintRepository'
+        );
+        $this->app->bind(
+            'App\Repositories\EvaluationRepositoryInterface',
+            'App\Repositories\EvaluationRepository'
+        );
+        $this->app->bind(
+            'App\Repositories\MethodRepositoryInterface',
+            'App\Repositories\MethodRepository'
+        );
+        $this->app->bind(
+            'App\Repositories\ShippingMethodRepositoryInterface',
+            'App\Repositories\ShippingMethodRepository'
+        );
+        $this->app->bind(
+            'App\Repositories\UserRepositoryInterface',
+            'App\Repositories\UserRepository'
+        );
+        $this->app->bind(
             'App\Repositories\BuyItemRepositoryInterface',
             'App\Repositories\BuyItemRepository'
         );

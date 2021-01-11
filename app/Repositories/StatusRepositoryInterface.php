@@ -18,4 +18,6 @@ interface StatusRepositoryInterface extends ModelRepositoryInterface
 {
     public function new($name);
     public function updateStatus(Status $status,$name);
+    public function createFromMKM($data);
+    public function updateStatusMKM(Status $status,$data);
 }

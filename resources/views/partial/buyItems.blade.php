@@ -5,7 +5,7 @@
  * Date: 17/04/2019
  * Time: 19:36
  */
-    $items = $command->ItemsWithCardAndProduct;
+$items = $command->ItemsWithCardAndProduct;
 
 ?>
 
@@ -14,6 +14,7 @@
     <tr>
         <th>Item id</th>
         <th>Product name</th>
+        <th>Condition</th>
         <th>Price p.u.</th>
         <th>Quantity</th>
         <th>Price</th>
@@ -29,29 +30,38 @@
         <tr id="trItem" data-id="{{$item->id}}">
             <td>{{$item->id}}</td>
             <td>
-{{--                <a href="{!! route('shopping.show', ['itemId'=>$item->id_product])  !!}">{{$item->product->name . ($item->isFoil ? ' - foil': '')}}</a>--}}
+                {{--                <a href="{!! route('shopping.show', ['itemId'=>$item->id_product])  !!}">{{$item->product->name . ($item->isFoil ? ' - foil': '')}}</a>--}}
                 {{$item->product->name . ($item->isFoil ? ' - foil': '')}}
             </td>
+            <td id="tdState" data-id="{{$item->id}}">
+                @if(!$printable)
+                    {{Form::select('selCondition',$conditions,$item->state,['data-id' => $item->id, 'data-href' =>route('buyItem.updateState',['id'=>$item->id,'state' => $item->state]), 'class' => 'condition'])}}</td>
+            @else
+                {{$item->state}}
+            @endif
             <td id="tdPU" data-id="{{$item->id}}">{{$item->price}}</td>
             <td id="tdQuantity" data-id="{{$item->id}}">{{$item->quantity}}</td>
             <td id="tdPT" data-id="{{$item->id}}">{{$item->price * $item->quantity}}</td>
             <td id="tdVPU" data-id="{{$item->id}}">{{$item->isFoil? $item->card->usd_price_foil:$item->card->usd_price}}</td>
-            @if($command->id_status)
-                <td>
+            @if($command->id_status && !$printable)
+                <td width="150px">
                     {!! Form::open(['route' => ['buyItem.update', ['id' => $item->id]], 'id' => 'form' . (isset($item->id)?$item->id: ''), 'class' => 'formUpdateBuyItem']) !!}
                     <input name="id" value="{{$item->id}}" hidden>
                     {{Form::select('quantity',array_combine(range(1,20),range(1,20)))}}
-                    <button type="submit" name="action" value="decrease">-</button>
-                    <button type="submit" name="action" value="increase">+</button>
-                    <button type="submit" name="action" value="remove">x</button>
-
+                    {{Form::submit('-',['name'=>'action', 'value' => 'decrease'])}}
+                    {{Form::submit('+',['name'=>'action', 'value' => 'increase'])}}
+                    {{Form::submit('x',['name'=>'action', 'value' => 'remove'])}}
                     {!! Form::close() !!}
 
                 </td>
-                @endif
+            @endif
         </tr>
     @endforeach
-    <tr><td colspan="4"><hr></td></tr>
+    <tr>
+        <td colspan="4">
+            <hr>
+        </td>
+    </tr>
     <tr>
         <td colspan="2"></td>
         <td>Total price:</td>

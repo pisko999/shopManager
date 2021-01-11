@@ -7,6 +7,7 @@ use App\Repositories\ExpansionRepositoryInterface;
 use App\Repositories\StockRepositoryInterface;
 use App\Services\messagerieService;
 use App\Services\MKMService;
+use App\Services\StockService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -33,7 +34,8 @@ class stockController extends Controller
         return view('getMKMStock');
     }
 
-    public function getMKMStockFile(MKMService $MKMService){
+    public function getMKMStockFile(MKMService $MKMService)
+    {
         $MKMService->saveStockFile();
         return redirect()->back();
     }
@@ -58,18 +60,20 @@ class stockController extends Controller
         return view('home');
     }
 
-    public function stockingShowGet(ExpansionRepositoryInterface $expansionRepository){
+    public function stockingShowGet(ExpansionRepositoryInterface $expansionRepository)
+    {
         $editions = $expansionRepository->getArrayForSelect();
         $r = 'stockingShowPost';
         return view('editionSelectGet', compact('editions', 'r'));
     }
 
-    public function stockingShowPost(Request $request, CardRepositoryInterface $cardRepository){
+    public function stockingShowPost(Request $request, CardRepositoryInterface $cardRepository)
+    {
 
         $cards = $cardRepository->getCardsByEditionWithProductAndColorsWithoutFoil($request->edition);
         $maxCard = $cardRepository->getCardByNameAndEdition("Plains", $request->edition)->first();
-        if($maxCard != null)
-            $cards = $cards->filter(function($value)use ($maxCard){
+        if ($maxCard != null)
+            $cards = $cards->filter(function ($value) use ($maxCard) {
                 return $value->scryfallCollectorNumber < $maxCard->scryfallCollectorNumber;
             });
         $colors = ['White', 'Blue', 'Black', 'Red', 'Green'];
@@ -94,4 +98,40 @@ class stockController extends Controller
 
         return view('showStocking', compact('list', 'colors', 'max'));
     }
+
+    public function stockEditSelect(ExpansionRepositoryInterface $expansionRepository)
+    {
+
+        $editions = $expansionRepository->getArrayForSelect();
+        $r = 'stockEditGet';
+        $m = 'get';
+        $requireFoilSelect = true;
+        return view('editionSelectGet', compact('editions', 'r', 'm', 'requireFoilSelect'));
+    }
+
+    public function stockEditGet(Request $request, ExpansionRepositoryInterface $expansionRepository)
+    {
+        $expansion = $expansionRepository->getByMKMId($request->id);
+
+        $stock = $expansion->getStockWithRelationsPaginate($request->foils);
+        $links = $stock->render();
+        \Debugbar::info($stock);
+        return view('stock.expansion', compact('expansion', 'stock', 'links'));
+    }
+public function stockUpdateQuantity($id,Request $request, StockRepositoryInterface $stockRepository, StockService $stockService){
+        $stock = $stockRepository->getById($id);
+        if(!$stock)
+            return 404;
+        switch($request->action){
+            case "decrease":
+                $result = $stockService->decrease($stock,$request->quantity);
+                break;
+            case "increase":
+                $result = $stockService->increase($stock,$request->quantity);
+                break;
+            default:
+                $result = null;
+        }
+        return $result;
+}
 }

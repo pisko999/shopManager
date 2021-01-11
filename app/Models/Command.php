@@ -13,6 +13,11 @@ class Command extends Model
         return $this->belongsTo('App\Models\User');
     }
 
+    public function buyer()
+    {
+        return $this->client();
+    }
+
     public function storekeeper()
     {
         return $this->belongsTo('App\Models\User');
@@ -38,8 +43,14 @@ class Command extends Model
         return $this->belongsTo('App\Models\Address');
     }
 
-    public function shippingMethod(){
+    public function shippingMethod()
+    {
         return $this->belongsTo('App\Models\ShippingMethod');
+    }
+
+    public function Evaluation()
+    {
+        return $this->belongsTo('App\Models\Evaluation');
     }
 
     public function items()
@@ -54,5 +65,27 @@ class Command extends Model
             $amount += $item->quantity * $item->price;
         }
         return $amount;
+    }
+
+    public function setSent()
+    {
+        $this->status->status()->associate(StatusName::firstOrCreate(['name'=> 'sent']));
+        $this->status->save();
+        return $this;
+    }
+
+    public function setCanceled()
+    {
+        $this->status->status()->associate(StatusName::firstOrCreate(['name'=> 'canceled']));
+        $this->status->save();
+        return $this;
+    }
+
+    public function getStatus()
+    {
+        if ($this->status != null && $this->status->status != null)
+            return $this->status->status->name;
+        else
+            return null;
     }
 }

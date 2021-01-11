@@ -108,4 +108,13 @@ class BuyItemController extends Controller
 
         return $answer;
     }
+
+    public function updateState($id, $state){
+        $item = $this->buyItemRepository->getById($id);
+        if(!$item)
+            abort(404);
+        $item->state = $state;
+        $item->save();
+        return $item;
+    }
 }

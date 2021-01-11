@@ -43,7 +43,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
     */
     public function addFromBuy($item)
     {
-        $stocks = $this->model->where('all_product_id', $item->id_product)->where('isFoil', $item->isFoil)->where('language', $item->id_language)->where('state',isset($item->condition)?$item->condition:"NM")->orderBy('price')->get();//TODO:add other criteria as signed
+        $stocks = $this->model->where('all_product_id', $item->id_product)->where('isFoil', $item->isFoil)->where('language', $item->id_language)->where('state', isset($item->condition) ? $item->condition : "NM")->orderBy('price')->get();//TODO:add other criteria as signed
         if ($stocks->count() == 0)
             $stock = $this->newFromBuy($item);
         else {
@@ -71,7 +71,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
     private function newFromBuy($item)
     {
         $price = $item->price * 1.6;
-        if($price < 0.16)
+        if ($price < 0.16)
             $price = 0.16;
         $stocking = $price >= 1.98 ? 2 : ($price >= 0.98 ? 1 : 0);
         return $this->model->create([
@@ -89,24 +89,25 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
         ]);
     }
 
-    public function addFromMKM($item)
+    public function addFromMKM($data)
     {
-        $lang = Language::firstOrCreate(['id' => $item->language->idLanguage], ['languageName' => $item->language->languageName]);
-        $stock = Stock::firstOrCreate(
+        $stock = $this->model->firstOrCreate(
             [
-                'idArticleMKM' => $item->idArticle,
-                'all_product_id' => $item->idProduct
+                'idArticleMKM' => $data->idArticle,
+                'all_product_id' => $data->idProduct
             ], [
-                'language' => $item->language->idLanguage,
-                'comments' => $item->comments,
-                'price' => $item->price,
-                'quantity' => $item->count,
-                'modifiedMKM' => $item->lastEdited,
-                'state' => $item->condition,
-                'isFoil' => $item->isFoil,
-                'isSigned' => $item->isSigned,
-                'isPlayset' => $item->isPlayset,
-                'isAltered' => $item->isAltered
+                'initial_price' => $data->price,
+                'quantity' => 0,
+                'price' => $data->price,
+                'stock' => $data->price > 1.97 ? 3 : ($data->price > 0.97 ? 2 : 1),
+                'language' => $data->language->idLanguage,
+                'isFoil' => isset($data->isFoil) ? $data->isFoil : null,
+                'signed' => isset($data->isSigned) ? $data->isSigned : null,
+                'playset' => isset($data->isPlayset) ? $data->isPlayset : null,
+                'altered' => isset($data->isAltered) ? $data->isAltered : null,
+                'state' => isset($data->condition) ? $data->condition : "NM",
+                'comments' => $data->comments,
+                'modifiedMKM' => isset($data->lastEdited) ? $data->lastEdited : null,
             ]
         );
 
@@ -397,41 +398,71 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
 
     public function differentUpdate(Stock $item, StockFileItem $mkmItem)
     {
+        //making collection for saving each change
         $changed = collect();
+
+        //if article with saved id has different id of product it is error
         if ($item->all_product_id != $mkmItem->idProduct) {
-            $changed->push(['type' => 'productError', $item->id]);
+            $changed->push(['type' => 'productError', [$item->id, $mkmItem->idArticle]]);
             return $changed;
         }
 
+        //quantity
         if ($item->quantity != $mkmItem->amount) {
-            $changed->push(['type' => 'quantity', [$item->id => $item->quantity - $item->amount]]);
+            $changed->push(['type' => 'quantity', [$item->id, $mkmItem->idArticle, $item->quantity - $item->amount]]);
             $item->quantity = $mkmItem->amount;
         }
 
+        //price
         if (floatval($item->price) != floatval($mkmItem->price)) {
-            $changed->push(['type' => 'price', [$item->id => floatval($item->price), $mkmItem->idArticle => floatval($mkmItem->price), 'equal' => floatval($item->price) != floatval($mkmItem->price)]]);
+            $changed->push(['type' => 'price', [$item->id, $mkmItem->idArticle, floatval($item->price), floatval($mkmItem->price)]]);
             $item->price = floatval($mkmItem->price);
         }
 
+        //condition
         if ($item->state != $mkmItem->condition) {
-            $changed->push(['type' => 'state', [$item->id => $item->state]]);
+            $changed->push(['type' => 'state', [$item->id,$mkmItem->idArticle, $item->state]]);
             $item->state = $mkmItem->condition;
         }
 
+        //comments
         if ($item->comments != $mkmItem->comments) {
-            $changed->push(['type' => 'comments', [$item->id => $item->comments]]);
+            $changed->push(['type' => 'comments', [$item->id, $mkmItem->idArticle, $item->comments]]);
             $item->comments = $mkmItem->comments;
         }
 
+        //is on sale
         if ($item->on_sale != $mkmItem->onSale) {
-            $changed->push(['type' => 'onSale', [$item->id => $item->on_sale]]);
+            $changed->push(['type' => 'onSale', [$item->id, $mkmItem->idArticle, $item->on_sale]]);
             $item->on_sale = $mkmItem->onSale;
         }
-        if ($changed->count() == 0)
-            return false;
 
+        //if no changes -> return
+        if ($changed->count() == 0)
+            return null;
+
+        //else saving item and return collection of changes
         $item->save();
         return $changed;
+    }
+
+    public function getByIdArticleMKM($id)
+    {
+        return $this->model->where('idArticleMKM', '=', $id)->first();
+    }
+
+    public function getByValues($data)
+    {
+        return $this->model->where([
+            'all_product_id' => $data->idProduct,
+            'price' => $data->price,
+            'language' => $data->language->idLanguage,
+            'isFoil' => isset($data->isFoil) ? $data->isFoil : null,
+            'signed' => isset($data->isSigned) ? $data->isSigned : null,
+            'playset' => isset($data->isPlayset) ? $data->isPlayset : null,
+            'altered' => isset($data->isAltered) ? $data->isAltered : null,
+            'state' => isset($data->condition) ? $data->condition : "NM",
+        ])->first();
     }
 
 }

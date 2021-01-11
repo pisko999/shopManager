@@ -32,6 +32,7 @@ class StockingController extends Controller
         return view('editionSelectGet', compact('editions', 'r', 'm', 'requireFoilSelect'));
     }
 
+
     public function stockingEditionGet1(Request $request)
     {
         $expansion = $this->expansionRepository->getByMKMId($request->id);

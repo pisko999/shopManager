@@ -14,6 +14,11 @@ class Stock extends Model
         return $this->belongsTo('App\Models\AllProduct','all_product_id', 'id');
     }
 
+    public function card()
+    {
+        return $this->belongsTo('App\Models\Card','all_product_id', 'id');
+    }
+
     public function image()
     {
         return $this->hasOne('App\Models\Image_stock');

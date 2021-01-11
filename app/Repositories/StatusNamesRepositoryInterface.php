@@ -16,4 +16,5 @@ use http\Env\Request;
 interface StatusNamesRepositoryInterface extends ModelRepositoryInterface
 {
     public function getOrCreateByName($name);
+    public function getByType($type);
 }

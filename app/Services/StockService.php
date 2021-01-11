@@ -29,11 +29,11 @@ class StockService
                 $mkmStock = $this->MKMService->increaseStock($stock->idArticleMKM, $buyItem->quantity);
                 //var_dump($mkmStock);
 
-                if(isset($mkmStock->error) && str_contains($mkmStock->error," doesn't exist in stock")){
+                if (isset($mkmStock->error) && str_contains($mkmStock->error, " doesn't exist in stock")) {
                     goto ifArticleDoesntExistAnymore;
                 }
 
-                if(!isset($mkmStock->article[0])) {
+                if (!isset($mkmStock->article[0])) {
                     $stock->error = $mkmStock;//->failed[0]->errorMessage;
                     //var_dump($stock->error);
                     $this->stockRepository->decreaseStock($stock, $mkmStock->failed[0]->count);
@@ -71,7 +71,7 @@ class StockService
                 else
                     $price = $buyItem->card->usd_price;
 
-                if($price < 0.16)
+                if ($price < 0.16)
                     $price = 0.16;
 
                 if ($price != null) {
@@ -185,41 +185,39 @@ class StockService
             return $this->add($product, $data);
     }
 
-    public function increase(Stock $stock, $quantity)
+    public function increase(Stock $stock, $quantity, $mkm = true)
     {
         $stock->quantity += $quantity;
         $stock->save();
 
-        if ($this->MKM)
+        if ($this->MKM && $mkm) {
             $answer = null;
-        if ($stock->idArticleMKM != null) {
-            $answer = $this->MKMService->increaseStock($stock->idArticleMKM, $quantity);
-            \Debugbar::info($answer);
+            if ($stock->idArticleMKM != null) {
+                $answer = $this->MKMService->increaseStock($stock->idArticleMKM, $quantity);
 
-        }
-        if ($stock->idArticleMKM == null || isset($answer->error)) {
+            }
+            if ($stock->idArticleMKM == null || isset($answer->error)) {
 
-            $answer2 = $this->MKMService->addToStock($stock->all_product_id, $quantity, $stock->price);
-            \Debugbar::info($answer2);
-            if ($answer2 != null) {
+                $answer2 = $this->MKMService->addToStock($stock->all_product_id, $quantity, $stock->price);
+                if ($answer2 != null) {
 
-                //$stock->idArticleMKM = $answer2->inserted[0]->idArticle->idArticle;
+                    $stock->idArticleMKM = $answer2->inserted[0]->idArticle->idArticle;
 
-                $stock->save();
+                    $stock->save();
+                }
             }
         }
-
-
+        return $stock;
     }
 
-    public function decrease(Stock $stock, $quantity)
+    public function decrease(Stock $stock, $quantity, $mkm = true)
     {
         if ($stock->quantity < $quantity)
             $quantity = $stock->quantity;
 
         $stock->quantity -= $quantity;
 
-        if ($this->MKM) {
+        if ($this->MKM && $mkm) {
             if ($stock->idArticleMKM != null) {
                 $answer = $this->MKMService->decreaseStock($stock->idArticleMKM, $quantity);
                 \Debugbar::info($answer);
@@ -234,6 +232,7 @@ class StockService
             $stock->delete();
         else
             $stock->save();
+        return $stock;
     }
 
 

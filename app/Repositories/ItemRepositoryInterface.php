@@ -15,10 +15,12 @@ use http\Env\Request;
 
 interface ItemRepositoryInterface
 {
-    public function stores(Request $request,Command $command);
+    public function stores(Request $request, Command $command);
 
     public function increase($id, $quantity);
 
     public function decrease($id, $quantity);
 
-}
+    public function storeFromMKM($data, $command, $updateStock);
+    public function relistItems($items);
+    }

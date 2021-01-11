@@ -30,7 +30,7 @@ class CreateComplaintEvaluationTable extends Migration
     public function down()
     {
 
-        Schema::table('image_stocks', function(Blueprint $table){
+        Schema::table('complaint_evaluation', function(Blueprint $table){
             $table->dropForeign('[complaint_id]');
             $table->dropForeign('[evaluation_id]');
         });

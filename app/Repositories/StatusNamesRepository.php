@@ -29,5 +29,8 @@ class StatusNamesRepository extends ModelRepository implements StatusNamesReposi
 
         return $this->model->firstOrCreate(['name' => $name]);
     }
+    public function getByType($type){
+        return $this->model->where('name', '=', $type)->first();
+    }
 
 }

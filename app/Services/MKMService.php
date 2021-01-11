@@ -36,6 +36,12 @@ class MKMService
     private $dataBag;
     private $dataBagCPT = 0;
 
+    const Send = "send";
+    const ConfirmReception = "confirmReception";
+    const Cancel = "cancel";
+    const RequestCancellation = "requestCancellation";
+    const AcceptCancellation = "acceptCancellation";
+
     /*
      *    1 - English
      *    2 - French
@@ -56,6 +62,14 @@ class MKMService
             $this->baseUrl = $this->baseUrlSandbox;
         }
         $this->dataBag = array();
+    }
+
+    public function changeState($id,string $action ,string $reason = null, ?bool $relistItems = null)
+    {
+        $data = new changeOrderState($action, $reason, $relistItems);
+\Debugbar::info($data->getXML());
+        return $this->call('order/' . $id , "PUT", $data);
+
     }
 
     public function addToDataBag($idProduct, $count, $price, $condition = "MT", $language = "EN", $comments = "", $isFoil = "false", $isSigned = "false", $isAltered = "false", $isPlayset = "false")
@@ -157,8 +171,14 @@ class MKMService
 //cancelled or 128
     public function getSellerOrders($state, $start = null)
     {
-        $this->isStatic = true; //Todo: remove after testing
+        //$this->isStatic = true; //Todo: remove after testing
         return $this->call("orders/1/" . $state . ($start != null ? '/' . $start : ''));
+    }
+
+    public function getOrder($id)
+    {
+        //$this->isStatic = true; //Todo: remove after testing
+        return $this->call("order/" . $id);
     }
 
     public function getProductList()
@@ -275,6 +295,12 @@ class MKMService
 
     }
 
+    public function setTrackingNumber($id, $trackingNumber){
+        $data = new trackingNumber($trackingNumber);
+
+        return $this->call("order/" . $id ."/tracking", "PUT", $data);
+    }
+
     private function call($command, $method = "GET", $data = null)
     {
 
@@ -310,17 +336,17 @@ class MKMService
         $this->getHeader();
         $xmlData = null;
         if ($data != null)
-            if (count($this->dataBag)>0)
+            if (count($this->dataBag) > 0)
                 $xmlData = $this->getXMLFromDataBag();
             else
                 $xmlData = $data->getXml();
         //var_dump($xmlData);
 
-        //\Debugbar::info($xmlData);
+        \Debugbar::info($xmlData);
 
         $response = $this->exec($xmlData);
 //var_dump(time()- $t);
-        if ($this->isStatic) {
+        if ($this->isStatic && $response != null) {
             $p = '';
             foreach ($pathArray as $dir) {
                 if (!Storage::exists($p . $dir))
@@ -550,8 +576,36 @@ class MKMService
 
 }
 
+abstract class request
+{
 
-class baseArticle
+    public abstract function getPureXML();
+
+    public function getXML()
+    {
+
+        return '<?xml version="1.0" encoding="UTF-8" ?>' .
+            '<request>' .
+            $this->getPureXML() .
+            '</request>';
+    }
+}
+
+class trackingNumber extends request{
+    private $trackingNumber;
+    public function __construct($trackingNumber)
+    {
+        var_dump($trackingNumber);
+        $this->trackingNumber = $trackingNumber;
+    }
+
+    public function getPureXML()
+    {
+return '<trackingNumber>' . $this->trackingNumber . '</trackingNumber>';    }
+}
+
+
+class baseArticle extends request
 {
     public $idArticle;
     public $count;
@@ -564,14 +618,6 @@ class baseArticle
     </article>';
     }
 
-    public function getXML()
-    {
-
-        $s = '<?xml version="1.0" encoding="UTF-8" ?>
-<request>' . $this->getPureXML() . '</request>';
-        //echo $s;
-        return $s;
-    }
 }
 
 class article extends baseArticle
@@ -602,13 +648,6 @@ class article extends baseArticle
     </article>';
     }
 
-    public function getXML()
-    {
-
-        return '<?xml version="1.0" encoding="UTF-8" ?><request>' .
-            $this->getPureXML() .
-            '</request>';
-    }
 }
 
 class product extends article
@@ -631,11 +670,36 @@ class product extends article
         </article>';
     }
 
-    public function getXML()
+
+}
+
+class changeOrderState extends request
+{
+    private $action;
+    private $reason;
+    private  $relistItems;
+
+    public function __construct(string $action,string $reason = null, ?bool $relistItems = null)
     {
-        return '<?xml version="1.0" encoding="UTF-8" ?>' .
-            '<request>' .
-            $this->getPureXML() .
-            '</request>';
+        $this->action = $action;
+        $this->reason = $reason;
+        $this->relistItems = $relistItems;
+    }
+
+    public function getPureXML()
+    {
+        return '<action>' .
+            $this->action .
+            '</action>' .
+            ($this->reason != null ?
+                '<reason>' .
+                $this->reason .
+                '</reason>' :
+                '') .
+            ($this->relistItems != null ?
+                '<relistItems>' .
+                $this->relistItems .
+                '</relistItems>' :
+                '');
     }
 }

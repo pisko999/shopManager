@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Status extends Model
 {
-    protected $fillable = ['status_id', 'date_bought', 'date_paid', 'date_sent', 'date_received'];
+    protected $fillable = ['status_id', 'date_bought', 'date_paid', 'date_sent', 'date_received', 'date_canceled', 'reason', 'was_merged_into'];
     public $timestamps = false;
 
     public function Name(){

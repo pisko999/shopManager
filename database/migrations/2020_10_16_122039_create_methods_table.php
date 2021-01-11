@@ -14,7 +14,7 @@ class CreateMethodsTable extends Migration
     public function up()
     {
         Schema::create('methods', function (Blueprint $table) {
-            $table->unsignedBigInteger('id')->primary();
+            $table->id();
             $table->string('name');
         });
     }

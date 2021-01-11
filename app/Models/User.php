@@ -30,13 +30,16 @@ class User extends Authenticatable
         'password', 'remember_token',
     ];
 
+    public function Address(){
+        return $this->hasOne('\App\Models\Address');
+    }
     public function addresses()
     {
         return $this->hasMany('\App\Models\Address');
     }
 
     public function Commands(){
-        return $this->hasMany('App\Models\Commnads');
+        return $this->hasMany('App\Models\Command', 'client_id', 'id');
     }
 
     public function BuyCommands(){

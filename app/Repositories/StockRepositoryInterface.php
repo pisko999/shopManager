@@ -15,7 +15,7 @@ use App\Objects\StockFileItem;
 use App\Services\MKMService;
 
 
-interface StockRepositoryInterface
+interface StockRepositoryInterface extends ModelRepositoryInterface
 {
     //public function whereInPaginate($list, $n);
 
@@ -51,4 +51,6 @@ interface StockRepositoryInterface
 
     public function differentUpdate(Stock $item,StockFileItem $mkmItem);
 
+    public function getByIdArticleMKM($id);
+    public function getByValues($data);
 }

@@ -15,7 +15,7 @@ class CreateShippingMethodsTable extends Migration
     {
         Schema::create('shipping_methods', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('method_id')->nullable();
+            $table->unsignedBigInteger('method_id');
             $table->unsignedDouble('price')->nullable();
             $table->boolean('is_letter')->nullable();
             $table->boolean('is_insured')->nullable();

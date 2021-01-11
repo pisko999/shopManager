@@ -21,6 +21,7 @@
 
     <!-- Styles -->
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    @yield('css')
 </head>
 <body>
 
@@ -152,9 +153,9 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{!! route('stockingShowGet')!!}">
+                        <a href="{!! route('stockEditSelect')!!}">
                             <div>
-                                stock list
+                                stock edit
                             </div>
                         </a>
                     </li>
@@ -172,8 +173,36 @@
                             </div>
                         </a>
                     </li>
-                    <hr/>
+                    <li class="nav-item">
+                        <a href="{!! route('testPdf')!!}">
+                            <div>
+                                test PDF
+                            </div>
+                        </a>
+                    </li>
 
+                    <li class="nav-item">
+                        <a href="#">
+                            <div id="setPdfAddressesPosition" data-href="{!! route('commandAddresses.setPosition',['position' => 0])!!}">
+                                set PDF addresses position
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{!! route('commandAddresses')!!}">
+                            <div id="PdfAddresses">
+                            PDF addresses
+                        </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{!! route('commandPrintPaid')!!}">
+                            <div>
+                                PDF factures
+                            </div>
+                        </a>
+                    </li>
+                    <hr/>
                 </ul>
 
             </div>
@@ -185,5 +214,21 @@
     </main>
 </div>
 </body>
+<script>
+    $(document).on('click', '#setPdfAddressesPosition', function (e) {
+        position = prompt('Starting position?');
+        url = $(this).data('href').slice(0,-1) + position;
+        $.ajax({
+            'method': "Get",
+            'url': url,
+
+            success: function (response) {
+
+                alert('position set to : ' + response);
+
+            },        })
+
+    })
+</script>
 
 </html>

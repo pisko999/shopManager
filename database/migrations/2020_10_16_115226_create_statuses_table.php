@@ -20,6 +20,9 @@ class CreateStatusesTable extends Migration
             $table->dateTime("date_paid")->nullable();
             $table->dateTime("date_sent")->nullable();
             $table->dateTime("date_received")->nullable();
+            $table->dateTime("date_canceled")->nullable();
+            $table->string('reason', 4096)->nullable();
+            $table->unsignedInteger('was_merged_into')->nullable();
         });
     }
 
