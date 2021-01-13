@@ -15,6 +15,14 @@ class AppServiceProvider extends ServiceProvider
     {
 
         $this->app->bind(
+            'App\Repositories\DeckRepositoryInterface',
+            'App\Repositories\DeckRepository'
+        );
+        $this->app->bind(
+            'App\Repositories\CardDeckRepositoryInterface',
+            'App\Repositories\CardDeckRepository'
+        );
+        $this->app->bind(
             'App\Repositories\AddressRepositoryInterface',
             'App\Repositories\AddressRepository'
         );

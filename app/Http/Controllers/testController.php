@@ -86,7 +86,8 @@ class testController extends Controller
             $i += 100;
         } while (1);
         $test = $orders;*/
-        $test = $this->MKMService->getOrder(17280349);
+        $order = $this->MKMService->getOrder(17280349)->order;
+        $test = $this->commandRepository->getByIdMKM( $order->idOrder)->id;
         //$buyCommand = $this->buyCommandRepository->getById(2);
         //$test = $this->buyItemRepository->getByStocking($buyCommand,2);
         \Debugbar::info($test);

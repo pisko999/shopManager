@@ -56,7 +56,7 @@ class pdfFacture extends FPDF
 
     private function showAddress($address, $h)
     {
-        $this->MultiCell(95, $h, iconv('UTF-8', 'windows-1252', $address), 0, "L");
+        $this->MultiCell(95, $h, iconv('UTF-8', 'windows-1250', $address), 0, "L");
     }
 
     private function showHead()

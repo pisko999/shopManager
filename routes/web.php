@@ -69,3 +69,13 @@ Route::post('/admin/stockingShow', ['as' => 'admin.stockingShow', 'uses' => 'Adm
 
 Route::get('/testPDF', ['as' => 'testPdf', 'uses' => 'testController@testPdf']);
 
+Route::post('/Deck/Card/Add', ['as' => 'deck.card.add', 'uses' => 'CardDeckController@addCard']);
+Route::post('/Deck/Card/increase/{id}', ['as' => 'deck.card.increase', 'uses' => 'CardDeckController@increase']);
+Route::post('/Deck/Card/decrease/{id}', ['as' => 'deck.card.decrease', 'uses' => 'CardDeckController@decrease']);
+Route::post('/Deck/Card/remove/{id}', ['as' => 'deck.card.remove', 'uses' => 'CardDeckController@remove']);
+
+Route::get('/Deck', ['as' => 'deck.index', 'uses' => 'DeckController@index']);
+Route::post('/Deck/Create', ['as' => 'deck.create', 'uses' => 'DeckController@create']);
+Route::get('/Deck/Check/{id}', ['as' => 'deck.check', 'uses' => 'DeckController@check']);
+Route::get('/Deck/{id}', ['as' => 'deck.show', 'uses' => 'DeckController@show']);
+

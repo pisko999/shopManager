@@ -94,7 +94,7 @@ class pdfAddress extends FPDF
             $this->SetLeftMargin($x);
             $this->SetX($x);
         }
-        $this->Cell(0, $h, iconv('UTF-8', 'windows-1252', $address->name), 0, 1, 'L');
+        $this->Cell(0, $h, iconv('UTF-8', 'windows-1250', $address->name), 0, 1, 'L');
         if ($address->extra != null)
             $this->Cell(0, $h, iconv('UTF-8', 'windows-1252', $address->extra), 0, 1, 'L');
         $this->Cell(0, $h, iconv('UTF-8', 'windows-1252', $address->street), 0, 1, 'L');

@@ -33,8 +33,6 @@ class StockChangesRepository extends ModelRepository implements StockChangesRepo
 
     public function add($type, $data)
     {
-        var_dump($type);
-        var_dump($data);
         return $this->model->create([
             'type' => $type,
             'stock_id' => $data[0],

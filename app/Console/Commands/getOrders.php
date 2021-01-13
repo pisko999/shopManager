@@ -65,15 +65,11 @@ class getOrders extends Command
 
         foreach ($states as $state) {
             $mkmOrders = $this->MKMService->getSellerOrders($state);
-            $orders = $this->commandRepository->getByType($state, true);
-            //var_dump($orders);
             if (isset($mkmOrders->order))
 
 
                 foreach ($mkmOrders->order as $order) {
-                    $command = null;
-                    $key = $orders->where('idOrderMKM', $order->idOrder)->keys()->first();
-                    $command = $orders->get($key);
+                    $command = $this->commandRepository->getByIdMKM($order->idOrder);
 
                     if (!$command) {
                         $command = $this->commandRepository->createFromMKM($order, $dateStock);
@@ -85,21 +81,25 @@ class getOrders extends Command
                         else
                             echo "Order #" . $command->idOrderMKM . " wasn`t changed.\n";
                     }
-                    $orders->forget($key);
+                    $key = $orders->search(function ($item, $key) use ($order) {
+                        return $item->idOrderMKM == $order->idOrder ? $key : null;
+                    });
+                    if ($key != null)
+                        $orders->forget($key);
                 }
 
 
         }
-        foreach ($orders as $order){
+        foreach ($orders as $order) {
             $mkmOrder = $this->MKMService->getOrder($order->idOrderMKM);
-            if(isset($mkmOrder->order)){
+            if (isset($mkmOrder->order)) {
                 $changed = $this->commandRepository->checkStatus($order->id, $mkmOrder->order);
                 if ($changed)
                     echo "Order #" . $order->idOrderMKM . " updated.\n";
                 else
                     echo "Order #" . $order->idOrderMKM . " wasn`t changed.\n";
             }
+        }
+        return 0;
     }
-return 0;
-}
 }

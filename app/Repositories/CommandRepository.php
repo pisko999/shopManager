@@ -202,9 +202,10 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
     public function getByType($type, $onlyMKM = false)
     {
         if (!is_numeric($type))
-            $type = $this->statusNamesRepository->getByType($type)->id;
+            if ($this->statusNamesRepository->getByType($type != null))
+                $type = $this->statusNamesRepository->getByType($type)->id;
 
-        if ($type != 0)
+        if ($type != 0 && $type != null)
             $commands = $this->model->with('status')
                 ->whereHas('status', function ($q) use ($type) {
                     return $q->where('status_id', '=', $type);
@@ -261,7 +262,8 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
         return $this->model->where('idOrderMKM', '=', $id)->first();
     }
 
-    public function setTrackingNumber($id,$trackingNumber){
+    public function setTrackingNumber($id, $trackingNumber)
+    {
         $this->model = $this->model->find($id);
         $this->MKMService->setTrackingNumber($this->model->idOrderMKM, $trackingNumber);
         $this->model->tracking_number = $trackingNumber;

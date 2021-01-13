@@ -205,7 +205,7 @@ class MKMService
 
     public function getStockFile()
     {
-        $this->isStatic = true;
+        //$this->isStatic = true;
         return $this->call("stock/file");
     }
 

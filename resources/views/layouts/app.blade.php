@@ -11,6 +11,7 @@
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}" defer></script>
+    <script src="{{ asset('js/base.js') }}" defer></script>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 @yield('scripts')
@@ -199,6 +200,13 @@
                         <a href="{!! route('commandPrintPaid')!!}">
                             <div>
                                 PDF factures
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{!! route('deck.index')!!}">
+                            <div>
+                                Decks
                             </div>
                         </a>
                     </li>
