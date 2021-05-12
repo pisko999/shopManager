@@ -20,7 +20,7 @@ class CreateStocksTable extends Migration
             $table->unsignedInteger('quantity');
             $table->unsignedFloat('price');
             $table->smallInteger('stock')->default(1);
-            $table->unsignedBigInteger('language')->default(1);
+            $table->unsignedBigInteger('language_id')->default(1);
             $table->boolean('isFoil')->nullable();
             $table->boolean('signed')->nullable();
             $table->boolean('playset')->nullable();
@@ -31,7 +31,7 @@ class CreateStocksTable extends Migration
             $table->string('idArticleMKM')->nullable(); //idArticle from mkm
             $table->string('modifiedMKM')->nullable(); //idArticle from mkm
 
-            $table->foreign('language')->references('id')->on('languages');
+            $table->foreign('language_id')->references('id')->on('languages');
             $table->foreign('all_product_id')->references('id')->on('all_products');
             $table->timestamps();
         });

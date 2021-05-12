@@ -22,11 +22,7 @@
                             <td colspan="2">@include('partial.showOverQuantity',['items' => $items, 'buyCommand' => $buyCommand])</td>
                         </tr>
                     </table>
-                    {{Form::open(['route' => ['buyCommandMake', 'id' => $buyCommand->id]])}}
-                    {{Form::text('value', $buyCommand->initial_value)}}
-                    {{Form::submit('Submit')}}
-                    {{Form::close()}}
-                    <a href="{{route('buyCommandClose', $buyCommand->id)}}"><button class="btn">Close</button></a>
+                    <a href="{{route('buyCommand.close', $buyCommand->id)}}"><button class="btn">Close</button></a>
                 </div>
             </div>
         </div>

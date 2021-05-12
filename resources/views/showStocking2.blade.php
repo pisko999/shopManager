@@ -33,7 +33,8 @@
                         }
                         ?>
                         <td style="background-color: {{$d}}; border: 1px black solid; padding: 0px; margin: 0px">{{$cards[intval($i + $j * $max)-1]->scryfallCollectorNumber}}</td>
-                        <td style="background-color: {{$c}}; border: 1px black solid; padding: 0px; margin: 0px">{{$cards[intval($i + $j * $max)-1]->name}}</td>
+                            <td style="background-color: {{$c}}; border: 1px black solid; padding: 0px; margin: 0px">{{substr($cards[intval($i + $j * $max)-1]->name, 0, 32)}}</td>
+                            <td> {{\App\libraries\PriceLibrary::getPrice($cards[intval($i + $j * $max)-1]->usd_price, \App\libraries\PriceLibrary::Usd,\App\libraries\PriceLibrary::Eur)}}</td>
                         <td style="border: 1px black solid; padding: 0px; margin: 0px; width: 16px;"></td>
                     @else
                         <td colspan="3"></td>

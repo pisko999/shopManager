@@ -6,9 +6,11 @@ use App\Models\Address;
 use App\Objects\pdfAddress;
 use App\Objects\PdfAddressStartPositionObject;
 use App\Objects\pdfFacture;
+use App\Objects\Status;
 use App\Repositories\CommandRepositoryInterface;
 use App\Http\Controllers\Controller;
 use App\Repositories\StatusNamesRepositoryInterface;
+use App\Services\messagerieService;
 use Illuminate\Http\Request;
 
 class CommandController extends Controller
@@ -36,13 +38,15 @@ class CommandController extends Controller
     {
 
         if(!isset($request->commandType))
-            $commandType = 5;
+            $commandType = 2;
         else
             $commandType = $request->commandType;
 
         $statusNames = $statusNamesRepository->getAll();
 
         $commands = $this->commandRepository->getCommandsPaginate($commandType);
+        $commands->appends($request->except('page'));
+        \Debugbar::info($commands);
         $links = $commands->render();
         return view('command.index', compact('commands', 'links', 'statusNames', 'commandType'));
     }
@@ -115,10 +119,34 @@ class CommandController extends Controller
             return response()->json(['message' => 'Command ' . $id . ' not found.'],404);
         return $command;
     }
+    public function setPaid($id){
+        $command = $this->commandRepository->setPaid($id);
+        if(!$command)
+            return response()->json(['message' => 'Command ' . $id . ' not found.'],404);
+        return $command;
+    }
 
     public function acceptCancellation($id, $relistItems){
         return $this->commandRepository->acceptCancellation($id, $relistItems);
 
+    }
+
+    public function sendAll(){
+        $commands = $this->commandRepository->getByType(Status::PAID, $onlyMKM = true);
+
+        foreach ($commands as $command) {
+
+            $this->commandRepository->setSend($command->id);
+            messagerieService::successMessage('Command #'. $command->id . ' was marked as sent.');
+        }
+
+        return redirect()->back();
+    }
+
+    public function checkMKM(Request $request){
+        $command = $this->commandRepository->checkByIdMKM($request->idOrderMKM);
+        \Debugbar::info($command);
+        return view('command.show', compact('command'));
     }
 
 }

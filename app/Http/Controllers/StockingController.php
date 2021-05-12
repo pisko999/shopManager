@@ -8,6 +8,7 @@ use App\Models\Expansion;
 use App\Repositories\CardRepositoryInterface;
 use App\Repositories\EditionRepositoryInterface;
 use App\Repositories\ExpansionRepositoryInterface;
+use App\Services\MKMService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 

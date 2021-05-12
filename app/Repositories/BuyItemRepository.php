@@ -111,4 +111,13 @@ class BuyItemRepository extends ModelRepository implements BuyItemRepositoryInte
     }
 
 
+    public function setPrice($id, $data)
+    {
+        $item = $this->model->find($id);
+        if(!$item)
+            return null;
+        $item->price = $data['price'];
+        $item->save();
+        return $item->price;
+    }
 }

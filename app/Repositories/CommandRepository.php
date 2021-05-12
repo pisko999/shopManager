@@ -202,7 +202,7 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
     public function getByType($type, $onlyMKM = false)
     {
         if (!is_numeric($type))
-            if ($this->statusNamesRepository->getByType($type != null))
+            if ($this->statusNamesRepository->getByType($type) != null)
                 $type = $this->statusNamesRepository->getByType($type)->id;
 
         if ($type != 0 && $type != null)
@@ -323,17 +323,31 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
 
     public function setSend($id)
     {
-        $this->model = $this->getById($id);
-        if ($this->model->idOrderMKM != null) {
-            $answer = $this->MKMService->changeState($this->model->idOrderMKM, MKMService::Send);
-            \Debugbar::info($answer);
+        $command = $this->getById($id);
+        if(!$command)
+            return false;
+        if ($command->idOrderMKM != null) {
+            $answer = $this->MKMService->changeState($command->idOrderMKM, MKMService::Send);
             if (isset($answer->order)) {
-                $this->model = $this->checkStatus($id, $answer->order);
-                return $this->model;
-            } else return false;
+                $command = $this->checkStatus($id, $answer->order);
+                return $command;
+            } else
+                return false;
+;
         }
+        if(!$command->delivery_address)
+            if($command->status->setSold())
+                return $command;
+        return $command->setSent();
+    }
 
-        return $this->model->setSent();
+    public function setPaid($id){
+        $command = $this->getById($id);
+        if(!$command)
+            return false;
+        if(!$command->delivery_address)
+            return $command->status->setSold();
+        return$command->status->setPaid();
     }
 
     public function acceptCancellation($id, $relistItems)
@@ -356,4 +370,18 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
         return $this->model;
     }
 
+    public function checkByIdMKM($id)
+    {
+        $command = $this->getByIdMKM($id);
+        if($command)
+            return $command;
+
+        $command = $this->MKMService->getOrder($id);
+        if(!isset($command->order))
+            return false;
+        $dateStock = \Storage::lastModified('MKMResponses/stockFile.csv');
+
+        $command = $this->createFromMKM($command->order, $dateStock);
+        return $command;
+    }
 }

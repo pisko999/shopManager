@@ -47,12 +47,16 @@ interface CommandRepositoryInterface
 
     public function getByIdMKM($id);
 
+    public function checkByIdMKM($id);
+
     public function getByType($type, $onlyMKM = false);
 
     public function checkStatus($id, $data);
 
     public function setSend($id);
+
     public function acceptCancellation($id, $relistItems);
-    public function setTrackingNumber($id,$trackingNumber);
+
+    public function setTrackingNumber($id, $trackingNumber);
 
 }

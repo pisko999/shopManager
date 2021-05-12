@@ -13,17 +13,29 @@
                                 {{ session('status') }}
                             </div>
                         @endif--}}
-                        {{Form::open(['method'=>'get'])}}
-                        <label for="commandType">Type: </label>
-                        <select id="commandType" name="commandType">
-                            <option value="all" selected>All</option>
-                            @foreach($statusNames as $statusName)
-                                <option
-                                    value="{{$statusName->id}}" {{$commandType == $statusName->id ? "selected":''}}>{{$statusName->name}}</option>
-                            @endforeach
-                        </select>
-                        <button type="submit">Submit</button>
-                        {{Form::close()}}
+                        <div class="row">
+                            <div class="offset-4 col-4 ">
+                                {{Form::open(['method'=>'get'])}}
+                                <label for="commandType">Type: </label>
+                                <select id="commandType" name="commandType">
+                                    <option value="all" selected>All</option>
+                                    @foreach($statusNames as $statusName)
+                                        <option
+                                            value="{{$statusName->id}}" {{$commandType == $statusName->id ? "selected":''}}>{{$statusName->name}}</option>
+                                    @endforeach
+                                </select>
+                                <button type="submit">Submit</button>
+                                {{Form::close()}}
+                            </div>
+                            <div class="offset-3 col-1">
+                                @if($commandType == \App\Objects\Status::PAID)
+                                    {{Form::open(['method'=>'get','route' => 'command.sendAll'])}}
+                                    {{Form::submit('sendAll',['class'=>'btn btn-success'])}}
+                                    {{Form::close()}}
+                                @endif
+
+                            </div>
+                        </div>
                         {!! $links !!}
                         <table style="align: center; width: 100%">
                             <thead>
@@ -39,6 +51,7 @@
                                 <td>actions</td>
                             @endif
                             </thead>
+                            <tbody class="scrolling-pagination">
                             @foreach($commands as $command)
                                 <tr>
                                     <td class="col-md-2">
@@ -67,35 +80,53 @@
                                     <td>
                                         {{--                                        <a href="{!! route('payment.show', ['payment_id' => $command->payment_id])!!}">--}}
                                         {{$command->status->name->name}}
+                                        {{$command->shippingMethod != null ? $command->shippingMethod->is_insured : ''}}
                                         {{--                                        </a>--}}
                                     </td>
                                     @if(!Auth::guest() && Auth::user()->role >= 4)
                                         <td>
-                                            <a href="{{route('commandFacture',['id' => $command->id])}}">
-                                                <button>F</button>
-                                            </a>
-                                            <a href="{{route('commandAddress',['id' => $command->id])}}">
-                                                <button>A</button>
-                                            </a>
-                                            <button data-target="#ModalTrackingNumber" data-toggle="modal"
-                                                    data-id="{{$command->id}}" id="btnTrackingNumber"
-                                                    data-tracking_number="{{$command->tracking_number}}">TN
-                                            </button>
-                                            @switch($command->getStatus())
-                                                @case("paid")
-                                                <button class="btnSend" data-id="{{$command->id}}">Send</button>
-                                                @break
-                                                @case("sent") //cancellationRequested
-                                                <button class="btnAcceptCancelation" data-id="{{$command->id}}">Accept
-                                                    Cancelation
-                                                </button>
-                                                @break
-                                            @endswitch
-
+                                            <div class="row d-table">
+                                                <div class="col-3 d-table-cell"><a
+                                                        href="{{route('commandFacture',['id' => $command->id])}}">
+                                                        <button>F</button>
+                                                    </a>
+                                                </div>
+                                                <div class="col-3 d-table-cell">
+                                                    <a href="{{route('commandAddress',['id' => $command->id])}}">
+                                                        <button>A</button>
+                                                    </a>
+                                                </div>
+                                                <div class="col-3 d-table-cell">
+                                                    @if($command->shippingMethod != null && $command->shippingMethod->is_insured)
+                                                        <button data-target="#ModalTrackingNumber" data-toggle="modal"
+                                                                data-id="{{$command->id}}" id="btnTrackingNumber"
+                                                                data-tracking_number="{{$command->tracking_number}}">TN
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                                <div class="col-3 d-table-cell">
+                                                    @switch($command->getStatus())
+                                                        @case("bought")
+                                                        <button class="btnPaid" data-id="{{$command->id}}">Payed</button>
+                                                        @break
+                                                        @case("paid")
+                                                        <button class="btnSend" data-id="{{$command->id}}">Send</button>
+                                                        @break
+                                                        @case("sent") <!--cancellationRequested-->
+                                                        <button class="btnAcceptCancelation" data-id="{{$command->id}}">
+                                                            Accept
+                                                            Cancelation
+                                                        </button>
+                                                        @break
+                                                    @endswitch
+                                                </div>
+                                            </div>
                                         </td>
                                     @endif
                                 </tr>
                             @endforeach
+                            {!! $links !!}
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -146,6 +177,22 @@
                 },
             });
         });
+        $(document).on('click', (".btnPaid"), function (e) {
+            url = "{{route('commandSetPaid', ['id' => 1])}}".slice(0, -1) + $(this).data('id');
+            $.ajax({
+                type: "get",
+                url: url,
+                success: function (response) {
+                    console.log(response);
+                    alert('paid');
+                },
+                error: function (response) {
+                    console.log(response);
+                    alert('not paid');
+                },
+            });
+        });
+
         $(document).on('click', (".btnAcceptCancelation"), function (e) {
             url = "{{route('commandAcceptCancellation', ['id' => 1, 'relistItems' => true])}}".slice(0, -3) +
                 $(this).data('id') +
@@ -163,6 +210,21 @@
                     console.log(response);
                     alert('not sent');
                 },
+            });
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jscroll/2.4.1/jquery.jscroll.min.js"></script>
+    <script type="text/javascript">
+        $('ul.pagination').hide();
+        $(function() {
+            $('.scrolling-pagination').jscroll({
+                autoTrigger: true,
+                padding: 0,
+                nextSelector: '.pagination li.active + li a',
+                contentSelector: 'div.scrolling-pagination',
+                callback: function() {
+                    $('ul.pagination').remove();
+                }
             });
         });
     </script>

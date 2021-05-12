@@ -97,12 +97,14 @@ class BuyItemController extends Controller
      */
     public function update($id, Request $request)
     {
-        if ($request->action == 'increase')
+        if ($request->action == '+')
             $answer = $this->buyItemRepository->increase($id, $request->all());
-        elseif ($request->action == 'decrease')
+        elseif ($request->action == '-')
             $answer = $this->buyItemRepository->decrease($id, $request->all());
-        elseif ($request->action == 'remove')
+        elseif ($request->action == 'x')
             $answer = $this->buyItemRepository->remove($id);
+        elseif($request->action == 'price')
+            $answer = $this->buyItemRepository->setPrice($id, $request->all());
         else
             return "false1";
 

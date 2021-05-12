@@ -210,6 +210,12 @@
                             </div>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <button data-target="#ModalCheckOrderMKM" data-toggle="modal"
+                                id="btnCheckOrderMKM">
+                                Check MKM order
+                        </button>
+                    </li>
                     <hr/>
                 </ul>
 
@@ -221,6 +227,7 @@
         </div>
     </main>
 </div>
+@include('modals.checkOrderMKM')
 </body>
 <script>
     $(document).on('click', '#setPdfAddressesPosition', function (e) {

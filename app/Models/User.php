@@ -47,7 +47,15 @@ class User extends Authenticatable
     }
     public function getActualBuyCommand(){
         return $this->BuyCommands()->whereHas('status', function ($q){
-            $q->where('status_id', '=', 1);
+            $q->where('status_id', '=', \App\Objects\Status::REBUY);
         })->first();
+    }
+
+    public function ChangeEmails(){
+        return $this->hasMany(ChangeEmail::class);
+    }
+
+    public function getChangeEmail(){
+        return $this->ChangeEmails()->where('fulfilled', false)->first();
     }
 }

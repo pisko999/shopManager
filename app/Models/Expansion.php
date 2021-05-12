@@ -44,12 +44,12 @@ class Expansion extends Model
         return $this->AllProducts()
             ->where('idCategory', 1)
             ->whereNotIn('name', $lands)
-            ->whereHas('card', function ($q) {
+            /*->whereHas('card', function ($q) {
                 $q->whereDoesntHave('types', function ($q) {
                     $q->where('name', '=', 'Token');
                 });
             })
-            ->join('cards', 'cards.id', '=', 'all_products.id')
+            */->join('cards', 'cards.id', '=', 'all_products.id')
             ->with('card', 'card.colors', 'card.rarity', 'card.cardFaces', 'card.types')
             ->orderByRaw('LENGTH(cards.scryfallCollectorNumber)', 'ASC')
             ->orderBy('cards.scryfallCollectorNumber');
@@ -59,11 +59,13 @@ class Expansion extends Model
     {
         return $this->AllProducts()
             ->where('idCategory', 1)
+            /*
             ->whereHas('card', function ($q) {
                 $q->whereDoesntHave('types', function ($q) {
                     $q->where('name', '=', 'Token');
                 });
             })
+            */
             ->join('cards', 'cards.id', '=', 'all_products.id')
             ->with('card', 'stock', 'image', 'card.stock', 'card.rarity')
             ->orderByRaw('LENGTH(cards.scryfallCollectorNumber)', 'ASC')

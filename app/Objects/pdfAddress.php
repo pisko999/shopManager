@@ -71,42 +71,64 @@ class pdfAddress extends FPDF
             $this->AddPage("L");
     }
 
-    function show($address)
+    public function show($address)
     {
-        $this->SetFont('Arial', '', 10);
-        $this->showAddress($this->myAddress, 4);
+        $this->showAddress("Sender:", $this->myAddress, 4, 10);
 
-        $this->SetXY(64 + $this->col * 148, 52 + $this->row * 105);
+        $this->SetXY(64 + $this->col * 148, 48 + $this->row * 105);
         $this->SetLeftMargin(70 + $this->col * 148);
 
-        $this->SetFont('Arial', '', 14);
 
-        $this->showAddress($address, 6);
+        $max = $this->showAddress("Addresser:", $address, 6, 14);
+
+        $this->showLines($max);
 
         $this->next();
     }
 
-    private function showAddress($address, $h)
+    private function showAddress($caption, $address, $h, $f)
     {
-        $max = $this->checkAddressWith($address, $h);
+        $this->SetFont('Arial', '', $f);
+
+        $max = $this->checkAddressWidth($address, $h);
         if ($max > 73) {
             $x = $this->lMargin - ($max - 73);
             $this->SetLeftMargin($x);
             $this->SetX($x);
         }
-        $this->Cell(0, $h, iconv('UTF-8', 'windows-1250', $address->name), 0, 1, 'L');
+        $this->SetFont('Arial', '', 6);
+
+        $this->Cell(0, $h, iconv('UTF-8', 'windows-1250', $caption), 0, 1, 'L');
+        $this->SetFont('Arial', '', $f);
+
+        try {
+            $this->Cell(0, $h, iconv('UTF-8', 'windows-1250', $address->name), 0, 1, 'L');
+        } catch (\Exception $e) {
+            $this->Cell(0, $h, iconv('UTF-8', 'windows-1252', $address->name), 0, 1, 'L');
+
+        }
         if ($address->extra != null)
             $this->Cell(0, $h, iconv('UTF-8', 'windows-1252', $address->extra), 0, 1, 'L');
-        $this->Cell(0, $h, iconv('UTF-8', 'windows-1252', $address->street), 0, 1, 'L');
+
+        try {
+            $this->Cell(0, $h, iconv('UTF-8', 'windows-1250', $address->street), 0, 1, 'L');
+        } catch (\Exception $e) {
+            $this->Cell(0, $h, iconv('UTF-8', 'windows-1252', $address->street), 0, 1, 'L');
+
+        }
         if ($address->number != null || $address->flat != null)
             $this->Cell(0, $h, ($address->number != null ? iconv('UTF-8', 'windows-1252', $address->number) : '') . "/" . ($address->flat != null ? iconv('UTF-8', 'windows-1252', $address->flat) : ''), 0, 1, 'L');
         $this->Cell($this->GetStringWidth($address->postal) + $h / 2, $h, iconv('UTF-8', 'windows-1252', $address->postal), 0, 0, 'L');
-        $this->Cell(0, $h, iconv('UTF-8', 'windows-1252', $address->city), 0, 1, 'L');
-        $this->Cell(0, $h, iconv('UTF-8', 'windows-1252', Countries::getCountryByCode($address->country)), 0, 1, 'L');
+        try {
+            $this->Cell(0, $h, iconv('UTF-8', 'windows-1252', $address->city), 0, 1, 'L');
+        } catch (\Exception $e) {
+            $this->Cell(0, $h, iconv('UTF-8', 'windows-1250', $address->city), 0, 1, 'L');
+        }$this->Cell(0, $h, iconv('UTF-8', 'windows-1252', Countries::getCountryByCode($address->country)), 0, 1, 'L');
 
+        return $max;
     }
 
-    public function checkAddressWith($address, $h)
+    public function checkAddressWidth($address, $h)
     {
         $max = $this->GetStringWidth($address->name);
         if ($address->extra != null && $this->GetStringWidth($address->extra) > $max)
@@ -124,6 +146,24 @@ class pdfAddress extends FPDF
     {
         PdfAddressStartPositionObject::setPosition($this->startPosition);
         return parent::Output($dest, $name, $isUTF8);
+    }
+
+    public function showLines($max){
+        $x = 5 + $this->col * 148;
+        $y = 3 + $this->row * 105;
+
+        $this->rect($x,$y, 50,25);
+        $this->line($x,$y, $x + 50, $y + 25);
+        $this->line($x,$y + 25, $x + 50, $y);
+
+        $x = 68 + $this->col * 148;
+        $y = 49 + $this->row * 105;
+        $x2 = 0;
+        if ($max > 73) {
+            $x2 = ($max - 73);
+        }
+        $this->rect($x-$x2,$y, 78 +$x2,36);
+
     }
 }
 

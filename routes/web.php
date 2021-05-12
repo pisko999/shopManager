@@ -43,6 +43,9 @@ Route::get('/setStockFromFile', ['as' => 'setStockFromFile', 'uses' => 'stockCon
 Route::get('/commands', ['as' => 'commands', 'uses' => 'commandController@getCommands']);
 Route::get('/command/type', ['as' => 'commandShowByType', 'uses' => 'commandController@showCommandsByType']);
 Route::post('/command/trackingNumber', ['as' => 'command.trackingNumber', 'uses' => 'commandController@trackingNumber']);
+Route::get('/command/sendAll', ['as' => 'command.sendAll', 'uses' => 'commandController@sendAll']);
+Route::post('/command/checkMKM', ['as' => 'command.checkMKM', 'uses' => 'commandController@checkMKM']);
+Route::get('/command/set/paid/{id}', ['as' => 'commandSetPaid', 'uses' => 'commandController@setPaid']);
 Route::get('/command/set/send/{id}', ['as' => 'commandSetSend', 'uses' => 'commandController@setSend']);
 Route::get('/command/acceptCancellation/{id}/{relistItems}', ['as' => 'commandAcceptCancellation', 'uses' => 'commandController@acceptCancellation']);
 Route::get('/command/{id}/printable', ['as' => 'commandShowPrintable', 'uses' => 'commandController@showPrintableCommand']);

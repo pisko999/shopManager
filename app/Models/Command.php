@@ -69,15 +69,13 @@ class Command extends Model
 
     public function setSent()
     {
-        $this->status->status()->associate(StatusName::firstOrCreate(['name'=> 'sent']));
-        $this->status->save();
+        $this->status->setSent();
         return $this;
     }
 
     public function setCanceled()
     {
-        $this->status->status()->associate(StatusName::firstOrCreate(['name'=> 'canceled']));
-        $this->status->save();
+        $this->status->setCanceled();
         return $this;
     }
 

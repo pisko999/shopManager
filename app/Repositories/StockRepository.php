@@ -43,7 +43,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
     */
     public function addFromBuy($item)
     {
-        $stocks = $this->model->where('all_product_id', $item->id_product)->where('isFoil', $item->isFoil)->where('language', $item->id_language)->where('state', isset($item->condition) ? $item->condition : "NM")->orderBy('price')->get();//TODO:add other criteria as signed
+        $stocks = $this->model->where('all_product_id', $item->id_product)->where('isFoil', $item->isFoil)->where('language_id', $item->id_language)->where('state', isset($item->condition) ? $item->condition : "NM")->orderBy('price')->get();//TODO:add other criteria as signed
         if ($stocks->count() == 0)
             $stock = $this->newFromBuy($item);
         else {
@@ -80,7 +80,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
             'quantity' => $item->quantity,
             'price' => $price,
             'stock' => $stocking,
-            'language' => $item->id_language,
+            'language_id' => $item->id_language,
             'isFoil' => $item->isFoil,
             'signed' => $item->signed,
             'playset' => $item->playset,
@@ -100,7 +100,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
                 'quantity' => 0,
                 'price' => $data->price,
                 'stock' => $data->price > 1.97 ? 3 : ($data->price > 0.97 ? 2 : 1),
-                'language' => $data->language->idLanguage,
+                'language_id' => $data->language->idLanguage,
                 'isFoil' => isset($data->isFoil) ? $data->isFoil : null,
                 'signed' => isset($data->isSigned) ? $data->isSigned : null,
                 'playset' => isset($data->isPlayset) ? $data->isPlayset : null,
@@ -131,7 +131,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
                 'idArticleMKM' => $item[0],
                 'all_product_id' => $item[1]
             ], [
-                'language' => $item[7],
+                'language_id' => $item[7],
                 'comments' => $item[13],
                 'initial_price' => $item[6],
                 'price' => $item[6],
@@ -165,7 +165,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
                 'idArticleMKM' => $item->idArticle,
                 'all_product_id' => $item->idProduct
             ], [
-                'language' => $item->language,
+                'language_id' => $item->language,
                 'comments' => $item->comments,
                 'initial_price' => $item->price,
                 'price' => $item->price,
@@ -286,7 +286,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
             'quantity' => $request['quantity'],
             'price' => $price,
             'state' => $state,
-            'language' => mb_strtoupper($request['lang'])
+            'language_id' => mb_strtoupper($request['lang'])
         ]);
 
         $item->save();
@@ -456,11 +456,11 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
         return $this->model->where([
             'all_product_id' => $data->idProduct,
             'price' => $data->price,
-            'language' => $data->language->idLanguage,
-            'isFoil' => isset($data->isFoil) ? $data->isFoil : null,
-            'signed' => isset($data->isSigned) ? $data->isSigned : null,
-            'playset' => isset($data->isPlayset) ? $data->isPlayset : null,
-            'altered' => isset($data->isAltered) ? $data->isAltered : null,
+            'language_id' => $data->language->idLanguage ?? $data->lang,
+            'isFoil' => isset($data->isFoil) ? boolval($data->isFoil) : null,
+            'signed' => isset($data->isSigned) ? boolval($data->isSigned) : null,
+            'playset' => isset($data->isPlayset) ? boolval($data->isPlayset) : null,
+            'altered' => isset($data->isAltered) ? boolval($data->isAltered) : null,
             'state' => isset($data->condition) ? $data->condition : "NM",
         ])->first();
     }

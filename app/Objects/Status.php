@@ -6,7 +6,11 @@ namespace App\Objects;
 
 class Status
 {
+    public const PAID = 2;
+    public const SENT = 3;
+    public const REBUY = 8;
 
+    //old
     private static $statuses = array(
         1=>'Cart',
         2=>'Rebuy',

@@ -10,6 +10,7 @@ use Codedge\Fpdf\Fpdf\Fpdf;
 class pdfFacture extends FPDF
 {
     private $facture;
+    private $centerPage = 115;
 
     function show($facture)
     {
@@ -19,7 +20,40 @@ class pdfFacture extends FPDF
 
         $this->SetFont('Arial', '', 12);
         $this->showItemsTable($this->facture->items);
+        $this->SetFont('Arial', '', 12);
+
+        $this->newThankPage();
+
     }
+
+    private function newThankPage(){
+        $this->AddPage();
+
+        $firstLine = 2;
+
+        $this->printCenteredText("Thank you for",$firstLine + 1);
+        $this->printCenteredText("your purchase.",$firstLine + 2);
+        $this->printCenteredText("Try my site",$firstLine + 4);
+        $this->printCenteredText("MtgForFun.cz",$firstLine + 5);
+        $this->printCenteredText("is under construction, but working",$firstLine + 6);
+        if($this->facture->buyer->mkm_username != null) {
+            $this->SetFont('Arial', 'bu', 12);
+            $this->printCenteredText("Login: " . $this->facture->buyer->email, $firstLine + 11);
+            $this->printCenteredText("Password: " . $this->facture->buyer->mkm_username, $firstLine + 12);
+            $this->SetFont('Arial', '', 12);
+            $this->printCenteredText("You can change it", $firstLine + 14);
+            $this->printCenteredText("on profile page.", $firstLine + 15);
+            $this->printCenteredText("For any question email me.", $firstLine + 16);
+            $this->printCenteredText("mtg@mtgforfun.cz", $firstLine + 17);
+        }
+
+
+    }
+
+    private function printCenteredText($text, $line){
+        $this->text($this->centerPage - $this->GetStringWidth($text) / 2,6 * $line, $text);
+
+}
 
     private function newPage()
     {
@@ -56,7 +90,12 @@ class pdfFacture extends FPDF
 
     private function showAddress($address, $h)
     {
-        $this->MultiCell(95, $h, iconv('UTF-8', 'windows-1250', $address), 0, "L");
+        try {
+            $this->MultiCell(85, $h, iconv('UTF-8', 'windows-1250', $address), 0, "L");
+        } catch (\Exception $e) {
+            $this->MultiCell(85, $h, iconv('UTF-8', 'windows-1252', $address), 0, "L");
+
+        }
     }
 
     private function showHead()
@@ -81,9 +120,9 @@ class pdfFacture extends FPDF
     {
 
         $this->cell(130, 5, $this->facture->shippingMethod != null ? $this->facture->shippingMethod->method->name : "", "L");
-        $this->cell(20, 5, $this->facture->shippingMethod != null ? ($this->facture->shippingMethod->is_letter ? "Letter" : "Online"): "", "L", 0, "C");
-        $this->cell(20, 5, $this->facture->shippingMethod != null ? ($this->facture->shippingMethod->is_insured ? "Insured" : ""): "", "L", 0, "C");
-        $this->cell(20, 5, $this->facture->shippingMethod != null ?$this->facture->shippingMethod->price: "", "LR", 1, "C");
+        $this->cell(20, 5, $this->facture->shippingMethod != null ? ($this->facture->shippingMethod->is_letter ? "Letter" : "Online") : "", "L", 0, "C");
+        $this->cell(20, 5, $this->facture->shippingMethod != null ? ($this->facture->shippingMethod->is_insured ? "Insured" : "") : "", "L", 0, "C");
+        $this->cell(20, 5, $this->facture->shippingMethod != null ? $this->facture->shippingMethod->price : "", "LR", 1, "C");
         $this->cell(0, 0, '', 1, 1);
 
     }
@@ -130,8 +169,8 @@ class pdfFacture extends FPDF
 
     private function showItemRow($item)
     {
-        $this->cell(15, 5, $item != null && $item->stock->product->expansion != null ? $item->stock->product->expansion->sign : "", "L");
-        $this->cell(100, 5, $item != null ? $item->stock->product->name : "", "L");
+        $this->cell(15, 5, ($item != null && isset($item->stock->product->expansion) && $item->stock->product->expansion != null) ? $item->stock->product->expansion->sign : "", "L");
+        $this->cell(100, 5, $item != null && isset($item->stock->product) ? $item->stock->product->name : "", "L");
         $this->cell(15, 5, $item != null ? $item->stock->state : "", "L", 0, "C");
         $this->cell(15, 5, $item != null ? ($item->stock->isFoil ? "F" : "") .
             ($item->stock->playset ? "P" : "") .

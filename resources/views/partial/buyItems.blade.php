@@ -31,7 +31,9 @@ $items = $command->ItemsWithCardAndProduct;
             <td>{{$item->id}}</td>
             <td>
                 {{--                <a href="{!! route('shopping.show', ['itemId'=>$item->id_product])  !!}">{{$item->product->name . ($item->isFoil ? ' - foil': '')}}</a>--}}
-                {{$item->product->name . ($item->isFoil ? ' - foil': '')}}
+                <a href="https://www.cardmarket.com/en/Magic/Products/Singles/{{strtr( $item->product->expansion->name, [' ' => '-', 'Core' => 'Core-Set',':' => '', '`' => ''])}}/{{strtr($item->product->name,[',' => '', '// ' => '', ' ' => '-',':' => '', '`' => ''])}}">
+                    {{$item->product->name . ($item->isFoil ? ' - foil': '')}}
+                </a>
             </td>
             <td id="tdState" data-id="{{$item->id}}">
                 @if(!$printable)
@@ -39,10 +41,18 @@ $items = $command->ItemsWithCardAndProduct;
             @else
                 {{$item->state}}
             @endif
-            <td id="tdPU" data-id="{{$item->id}}">{{$item->price}}</td>
+            <td id="tdPU" data-id="{{$item->id}}">
+                {!! Form::open(['route' => ['buyItem.update', ['id' => $item->id]], 'id' => 'formPrice' . (isset($item->id)?$item->id: ''), 'class' => 'formUpdateBuyItem']) !!}
+{{--                <input name="action" value="price" hidden>--}}
+                    <input id="inputPrice" name="price" value="{{$item->price}}">
+                {{Form::submit('price',['name'=>'action', 'value' => 'price'])}}
+
+                {!! Form::close() !!}
+            </td>
             <td id="tdQuantity" data-id="{{$item->id}}">{{$item->quantity}}</td>
             <td id="tdPT" data-id="{{$item->id}}">{{$item->price * $item->quantity}}</td>
-            <td id="tdVPU" data-id="{{$item->id}}">{{$item->isFoil? $item->card->usd_price_foil:$item->card->usd_price}}</td>
+            <td id="tdVPU"
+                data-id="{{$item->id}}">{{$item->card != null ?($item->isFoil? $item->card->usd_price_foil:$item->card->usd_price):''}}</td>
             @if($command->id_status && !$printable)
                 <td width="150px">
                     {!! Form::open(['route' => ['buyItem.update', ['id' => $item->id]], 'id' => 'form' . (isset($item->id)?$item->id: ''), 'class' => 'formUpdateBuyItem']) !!}

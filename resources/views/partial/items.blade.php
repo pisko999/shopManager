@@ -29,7 +29,7 @@ if (!isset($items))
             <td>
 
 {{--                <a href="{!! route('shopping.show', ['itemId'=>$item->stock->all_product_id])  !!}">--}}
-                    {{$item->stock->product->name . ( $item->stock->isFoil == 1 ? ' - foil': '')}}
+                    {{isset($item->stock->product)?($item->stock->product->name . ( $item->stock->isFoil == 1 ? ' - foil': '')):'token?'}}
 {{--                </a>--}}
 
             </td>
@@ -105,6 +105,5 @@ if (!isset($items))
         <td colspan="2"></td>
         <td>Total price:</td>
         <td>{{$price}}</td>
-
     </tr>
 </table>

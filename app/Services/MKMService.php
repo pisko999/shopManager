@@ -4,6 +4,7 @@
 namespace App\Services;
 
 
+use App\Models\MkmError;
 use Illuminate\Support\Facades\Storage;
 
 class MKMService
@@ -183,7 +184,8 @@ class MKMService
 
     public function getProductList()
     {
-        $this->isStatic = true;
+        //
+        //$this->isStatic = true;
         return $this->call("productlist");
     }
 
@@ -342,7 +344,7 @@ class MKMService
                 $xmlData = $data->getXml();
         //var_dump($xmlData);
 
-        \Debugbar::info($xmlData);
+        //\Debugbar::info($xmlData);
 
         $response = $this->exec($xmlData);
 //var_dump(time()- $t);
@@ -364,6 +366,16 @@ class MKMService
                 $responseFile = Storage::put($path . '/' . $filename, $toStore);
 
             }
+        }
+
+        if(!$response || isset($response->error))
+        {
+            $err =  new MkmError();
+            $err->command = $command;
+            $err->method = $method;
+            $err->parameters = $data;
+            $err->type_answer = $response;
+            $err->save();
         }
 
         return $response;

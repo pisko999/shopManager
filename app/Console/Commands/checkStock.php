@@ -166,15 +166,17 @@ class checkStock extends Command
 
                 //else if article no more exists on MKM ( idmkm doesnt match to any id form MKM)
             } elseif ($mkmItem->count() == 0) {
+                if ($item->product == null)
+                    var_dump($item);
+                else
+                    //if is card set quantity to 0 and save
+                    if ($item->product->idCategory == 1) {
+                        $item->quantity = 0;
+                        $item->save();
 
-                //if is card set quantity to 0 and save
-                if ($item->product->idCategory == 1) {
-                    $item->quantity = 0;
-                    $item->save();
-
-                    //collect that it happens
-                    $answers->push(collect()->push(['type' => 'articleNoMoreOnMKM', [$item->id, $item->idArticleMKM]]));
-                }
+                        //collect that it happens
+                        $answers->push(collect()->push(['type' => 'articleNoMoreOnMKM', [$item->id, $item->idArticleMKM]]));
+                    }
             } else {
 
                 // duplicate --- should never happend

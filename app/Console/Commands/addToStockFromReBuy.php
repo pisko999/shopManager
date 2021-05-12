@@ -69,10 +69,10 @@ class addToStockFromReBuy extends Command
 
                 $stock = $this->stockService->addFromBuy($item);
 
-                                if (isset($stock->error))
-                                    array_push($errors, $stock->error);
-                                if ($stock->quantity > 20)
-                                    array_push($messages, $stock);
+                if (isset($stock->error))
+                    array_push($errors, $stock->error);
+                if ($stock->quantity > 20)
+                    array_push($messages, $stock);
 
             }
 

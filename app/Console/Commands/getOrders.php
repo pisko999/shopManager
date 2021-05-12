@@ -57,49 +57,60 @@ class getOrders extends Command
      */
     public function handle()
     {
-        $dateStock = \Storage::lastModified('MKMResponses/stockFile.csv');
-        $states = ['bought', 'paid', 'sent',]; // 'received', 'lost', 'cancelled'
-        $orders = collect();
-        foreach ($states as $state)
-            $orders = $orders->merge($this->commandRepository->getByType($state, true));
+        \DB::beginTransaction();
+        try {
+            $dateStock = \Storage::lastModified('MKMResponses/stockFile.csv');
+            $states = ['bought', 'paid', 'sent',]; // 'received', 'lost', 'cancelled'
+            $orders = collect();
+            foreach ($states as $state)
+                $orders = $orders->merge($this->commandRepository->getByType($state, true));
 
-        foreach ($states as $state) {
-            $mkmOrders = $this->MKMService->getSellerOrders($state);
-            if (isset($mkmOrders->order))
+            foreach ($states as $state) {
+                $mkmOrders = $this->MKMService->getSellerOrders($state);
+                if (isset($mkmOrders->order))
 
 
-                foreach ($mkmOrders->order as $order) {
-                    $command = $this->commandRepository->getByIdMKM($order->idOrder);
+                    foreach ($mkmOrders->order as $order) {
+                        $command = $this->commandRepository->getByIdMKM($order->idOrder);
 
-                    if (!$command) {
-                        $command = $this->commandRepository->createFromMKM($order, $dateStock);
-                        echo "Order #" . $command->idOrderMKM . " was added.\n\t" . $command->items->count() . " items added\n";
-                    } else {
-                        $changed = $this->commandRepository->checkStatus($command->id, $order);
-                        if ($changed)
-                            echo "Order #" . $command->idOrderMKM . " updated.\n";
-                        else
-                            echo "Order #" . $command->idOrderMKM . " wasn`t changed.\n";
+                        if (!$command) {
+                            $command = $this->commandRepository->createFromMKM($order, $dateStock);
+                            echo "Order #" . $command->idOrderMKM . " was added.\n\t" . $command->items->count() . " items added\n";
+                        } else {
+                            $changed = $this->commandRepository->checkStatus($command->id, $order);
+                            if ($changed)
+                                echo "Order #" . $command->idOrderMKM . " updated.\n";
+                            else
+                                echo "Order #" . $command->idOrderMKM . " wasn`t changed.\n";
+                        }
+                        $key = $orders->search(function ($item, $key) use ($order) {
+                            return $item->idOrderMKM == $order->idOrder ? $key : null;
+                        });
+                        if ($key != null)
+                            $orders->forget($key);
                     }
-                    $key = $orders->search(function ($item, $key) use ($order) {
-                        return $item->idOrderMKM == $order->idOrder ? $key : null;
-                    });
-                    if ($key != null)
-                        $orders->forget($key);
-                }
 
 
-        }
-        foreach ($orders as $order) {
-            $mkmOrder = $this->MKMService->getOrder($order->idOrderMKM);
-            if (isset($mkmOrder->order)) {
-                $changed = $this->commandRepository->checkStatus($order->id, $mkmOrder->order);
-                if ($changed)
-                    echo "Order #" . $order->idOrderMKM . " updated.\n";
-                else
-                    echo "Order #" . $order->idOrderMKM . " wasn`t changed.\n";
             }
+
+            foreach ($orders as $order) {
+                $mkmOrder = $this->MKMService->getOrder($order->idOrderMKM);
+                if (isset($mkmOrder->order)) {
+                    $changed = $this->commandRepository->checkStatus($order->id, $mkmOrder->order);
+                    if ($changed)
+                        echo "Order #" . $order->idOrderMKM . " updated.\n";
+                    else
+                        echo "Order #" . $order->idOrderMKM . " wasn`t changed.\n";
+                }
+            }
+        } catch (\Exception $e) {
+
+            \Debugbar::info($e);
+            \DB::rollBack();
+            return null;
         }
+        \DB::commit();
+
         return 0;
     }
 }
