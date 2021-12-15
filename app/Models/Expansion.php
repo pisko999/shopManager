@@ -42,8 +42,8 @@ class Expansion extends Model
     {
         $lands = ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest'];
         return $this->AllProducts()
-            ->where('idCategory', 1)
-            ->whereNotIn('name', $lands)
+            ->where('idCategory', '1')
+            //->whereNotIn('name', $lands)
             /*->whereHas('card', function ($q) {
                 $q->whereDoesntHave('types', function ($q) {
                     $q->where('name', '=', 'Token');
@@ -51,7 +51,7 @@ class Expansion extends Model
             })
             */->join('cards', 'cards.id', '=', 'all_products.id')
             ->with('card', 'card.colors', 'card.rarity', 'card.cardFaces', 'card.types')
-            ->orderByRaw('LENGTH(cards.scryfallCollectorNumber)', 'ASC')
+            ->orderByRaw('LENGTH(cards.scryfallCollectorNumber)')
             ->orderBy('cards.scryfallCollectorNumber');
     }
 

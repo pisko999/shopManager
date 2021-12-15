@@ -120,6 +120,7 @@ class pdfAddress extends FPDF
             $this->Cell(0, $h, ($address->number != null ? iconv('UTF-8', 'windows-1252', $address->number) : '') . "/" . ($address->flat != null ? iconv('UTF-8', 'windows-1252', $address->flat) : ''), 0, 1, 'L');
         $this->Cell($this->GetStringWidth($address->postal) + $h / 2, $h, iconv('UTF-8', 'windows-1252', $address->postal), 0, 0, 'L');
         try {
+            \Debugbar::info($address->city);
             $this->Cell(0, $h, iconv('UTF-8', 'windows-1252', $address->city), 0, 1, 'L');
         } catch (\Exception $e) {
             $this->Cell(0, $h, iconv('UTF-8', 'windows-1250', $address->city), 0, 1, 'L');

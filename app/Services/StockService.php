@@ -35,8 +35,8 @@ class StockService
 
                 if (!isset($mkmStock->article[0])) {
                     $stock->error = $mkmStock;//->failed[0]->errorMessage;
-                    //var_dump($stock->error);
-                    $this->stockRepository->decreaseStock($stock, $mkmStock->failed[0]->count);
+                    var_dump($stock->error);
+                    //$this->stockRepository->decreaseStock($stock, $mkmStock->failed[0]->count);
                 } else {
                     $mkmStock = $mkmStock->article[0];
 
@@ -65,7 +65,7 @@ class StockService
                     $price = 0.16;
                 */
                 ifArticleDoesntExistAnymore:
-
+var_dump($buyItem);
                 if ($buyItem->isFoil)
                     $price = $buyItem->card->usd_price_foil;
                 else

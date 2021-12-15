@@ -171,10 +171,10 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
                 'price' => $item->price,
                 'quantity' => $item->amount,
                 'state' => $item->condition,
-                'isFoil' => $item->foil == "" ? 0 : 1,
-                'signed' => $item->signed == "" ? 0 : 1,
-                'playset' => $item->playset == "" ? 0 : 1,
-                'altered' => $item->altered == "" ? 0 : 1,
+                'isFoil' => $item->foil == "" || $item->foil == 0 ? 0 : 1,
+                'signed' => $item->signed == "" || $item->signed == 0 ? 0 : 1,
+                'playset' => $item->playset == "" || $item->playset == 0 ? 0 : 1,
+                'altered' => $item->altered == "" || $item->altered == 0 ? 0 : 1,
                 'stock' => $stocking
             ]
         );

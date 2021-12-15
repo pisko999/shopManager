@@ -191,7 +191,7 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
     public function getCommandsPaginate($type)
     {
         if ($type != 0)
-            $commands = $this->model->with('status')->whereHas('status', function ($q) use ($type) {
+            $commands = $this->model->with('status')->where('is_presale', '=', 0)->whereHas('status', function ($q) use ($type) {
                 return $q->where('status_id', '=', $type);
             })->paginate($this->nbrPerPage);
         else
@@ -199,7 +199,7 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
         return $commands;
     }
 
-    public function getByType($type, $onlyMKM = false)
+    public function getByType($type, $onlyMKM = false, $onlyPresale = false)
     {
         if (!is_numeric($type))
             if ($this->statusNamesRepository->getByType($type) != null)
@@ -215,6 +215,9 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
 
         if ($onlyMKM) {
             $commands = $commands->whereNotNull('idOrderMKM');
+        }
+        if (!$onlyPresale) {
+            $commands = $commands->where('is_presale', '=', 0);
         }
 
         return $commands->get();
