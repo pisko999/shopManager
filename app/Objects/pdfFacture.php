@@ -37,14 +37,11 @@ class pdfFacture extends FPDF
         $this->printCenteredText("MtgForFun.cz",$firstLine + 5);
         $this->printCenteredText("is under construction, but working",$firstLine + 6);
         if($this->facture->buyer->mkm_username != null) {
-            $this->SetFont('Arial', 'bu', 12);
-            $this->printCenteredText("Login: " . $this->facture->buyer->email, $firstLine + 11);
-            $this->printCenteredText("Password: " . $this->facture->buyer->mkm_username, $firstLine + 12);
             $this->SetFont('Arial', '', 12);
-            $this->printCenteredText("You can change it", $firstLine + 14);
-            $this->printCenteredText("on profile page.", $firstLine + 15);
-            $this->printCenteredText("For any question email me.", $firstLine + 16);
-            $this->printCenteredText("mtg@mtgforfun.cz", $firstLine + 17);
+            $this->printCenteredText("For account just contact me", $firstLine + 12);
+            $this->printCenteredText("by message on cardmarket", $firstLine + 13);
+            $this->printCenteredText("or email me", $firstLine + 14);
+            $this->printCenteredText("mtg@mtgforfun.cz", $firstLine + 15);
         }
 
 

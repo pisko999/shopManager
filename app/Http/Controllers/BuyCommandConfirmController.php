@@ -32,6 +32,8 @@ class BuyCommandConfirmController extends Controller
             messagerieService::errorMessage("Command not found.");
 
         } else {
+            $buyCommand->initial_value = $buyCommand->value();
+            $buyCommand->save();
             $this->statusRepository->updateStatus($buyCommand->status, "closed");
             messagerieService::successMessage("Command closed.");
         }

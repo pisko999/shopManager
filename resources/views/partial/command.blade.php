@@ -14,7 +14,7 @@
                                         <td style="border: black 1px solid">Order : {{$command->id}}</td>
                                     </tr>
                                     <tr>
-                                        <td style="border: black 1px solid">@if($command->payment != null)@include('partial.payment',['payment' => $command->payment])@endif</td>
+                                        <td style="border: black 1px solid">@if($command->payment != null)@include('partial.payment',['payment' => $command->payment])@endif<br>{{$command->status->status->name}}</td>
                                         <td style="border: black 1px solid">@include('partial.address',['address' => $command->billing_address, 'user' => $command->client])</td>
                                     </tr>
                                     <tr>

@@ -19,7 +19,7 @@ class Conditions
         'NM'=>'Near Mint',
         'LP'=>'Lightly Played',
         'PL'=>'Played',
-        'Ex'=>'Excellent',
+        'EX'=>'Excellent',
         'GD'=>'Good',
         'PO'=>'Poor',
     );

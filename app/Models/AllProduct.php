@@ -38,4 +38,9 @@ class AllProduct extends Model
     public function getStock($foil=0){
         return $this->stock()->where('isFoil', $foil)->get();
     }
+
+    public function priceGuide(){
+        $date = \Carbon\Carbon::now()->toDateString();
+        return $this->hasMany('App\Models\PriceGuide', 'idProduct', 'id')->where('date', $date)->orderBy('date','desc');
+    }
 }

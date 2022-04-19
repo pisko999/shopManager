@@ -19,7 +19,7 @@ class addToStockFromReBuy extends Command
      *
      * @var string
      */
-    protected $signature = 'command:addToStockFromReBuy';
+    protected $signature = 'command:addToStockFromReBuy {id?}';
 
     /**
      * The console command description.
@@ -50,15 +50,21 @@ class addToStockFromReBuy extends Command
      */
     public function handle()
     {
-
-        $buyCommands = $this->buyCommandRepository->getClosed();
+        $id = strtoupper($this->argument('id'));
+        if(is_numeric($id)) {
+            $buyCommands = array($this->buyCommandRepository->getById($id));
+            $countCommands = 1;
+        } else {
+            $buyCommands = $this->buyCommandRepository->getClosed();
+            $countCommands = $buyCommands->count();
+        }
         $i = 0;
-        $countCommands = $buyCommands->count();
         foreach ($buyCommands as $buyCommand) {
             $i++;
             $errors = array();
             $messages = array();
             $j = 0;
+            $total = 0;
             $countItems = $buyCommand->items->count();
             foreach ($buyCommand->items as $item) {
                 $j++;
@@ -73,9 +79,15 @@ class addToStockFromReBuy extends Command
                     array_push($errors, $stock->error);
                 if ($stock->quantity > 20)
                     array_push($messages, $stock);
-
+                $total += $stock->price * $item->quantity;
             }
-
+            foreach($messages as $message) {
+                var_dump($message);
+            }
+            foreach ($errors as $error) {
+                var_dump($error);
+            }
+            $this->buyCommandRepository->setValue($buyCommand, $total);
             $this->statusRepository->updateStatus($buyCommand->status, "confirmed");
         }
     }

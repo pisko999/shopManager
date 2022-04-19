@@ -86,6 +86,11 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
         return $this->model->where('id', $id)->with('items')->first();
     }
 
+    public function getByIds($ids)
+    {
+        return $this->model->whereIn('id', $ids)->with('items')->with('status')->get()->sortBy('status.date_paid');
+    }
+
     public function getByUser($user)
     {
         return $this->model
@@ -219,8 +224,12 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
         if (!$onlyPresale) {
             $commands = $commands->where('is_presale', '=', 0);
         }
-
-        return $commands->get();
+        if($type == 2){
+            return $commands->get()->sortBy('status.date_paid');
+        }else {
+            return $commands->get()
+                ;
+        }
     }
 
     public function createFromMKM($data, $dateStock)
@@ -299,11 +308,21 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
             $command->temporary_email = $data->temporaryEmail;
             $changed = true;
         }
+        $address = $this->addressRepository->createFromMKM($data->shippingAddress);
+        if($address->wasRecentlyCreated){
+            $command->delivery_address()->associate($address);
+            echo "Address changed\n";
+            $changed = true;
+        }
         if ($changed) {
             $command->save();
             return true;
         }
         return false;
+    }
+
+    private function checkAddress($data){
+
     }
 
     private function getShippingAddress($data, $buyer)

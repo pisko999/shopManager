@@ -56,4 +56,13 @@ class BuyCommandRepository extends ModelRepository implements BuyCommandReposito
         })->get();
     }
 
+    public function getPaginateList($n = 25)
+    {
+        return $this->model->with('client', 'items', 'status', 'status.status')->orderBy('id', 'desc')->paginate($n);
+    }
+
+    public function setValue($buyCommand, $value) {
+        $buyCommand->value = $value;
+        $buyCommand->save();
+    }
 }

@@ -40,7 +40,7 @@
                                     @endif
                                     <td>
                                         <a href="{!! route('buyCommand.show', ['id' => $command->id])!!}">
-                                            {{$command->items != null?$command->items->count():0}}
+                                            {{$command->items != null ? $command->items->count() : 0}}
                                         </a>
                                     </td>
                                     <td>

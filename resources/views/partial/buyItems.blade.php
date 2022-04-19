@@ -26,7 +26,27 @@ $items = $command->ItemsWithCardAndProduct;
     </thead>
     <?php $price = 0; ?>
     @foreach($items as $item)
-        <?php $price += $item->price * $item->quantity; ?>
+        <?php
+        $priceGuide = $item->product->priceGuide->first();
+        $itemPrice =
+            $command->getStatus() == "confirmed" ?
+                $item->stock->price
+                : (
+                $priceGuide != null ?
+                \App\Libraries\PriceLibrary::getPrice(
+                    $item->isFoil ?
+                        $priceGuide->foilTrend :
+                        $priceGuide->trend,
+                    \App\Libraries\PriceLibrary::Eur,
+                    \App\Libraries\PriceLibrary::Eur
+                )
+                :
+                ''
+            );
+        if(is_numeric($itemPrice)) {
+            $price += $itemPrice * $item->quantity;
+            }
+        ?>
         <tr id="trItem" data-id="{{$item->id}}">
             <td>{{$item->id}}</td>
             <td>
@@ -52,7 +72,7 @@ $items = $command->ItemsWithCardAndProduct;
             <td id="tdQuantity" data-id="{{$item->id}}">{{$item->quantity}}</td>
             <td id="tdPT" data-id="{{$item->id}}">{{$item->price * $item->quantity}}</td>
             <td id="tdVPU"
-                data-id="{{$item->id}}">{{$item->card != null ?($item->isFoil? $item->card->usd_price_foil:$item->card->usd_price):''}}</td>
+                data-id="{{$item->id}}">{{$itemPrice}}</td>
             @if($command->id_status && !$printable)
                 <td width="150px">
                     {!! Form::open(['route' => ['buyItem.update', ['id' => $item->id]], 'id' => 'form' . (isset($item->id)?$item->id: ''), 'class' => 'formUpdateBuyItem']) !!}
@@ -75,9 +95,9 @@ $items = $command->ItemsWithCardAndProduct;
     <tr>
         <td colspan="2"></td>
         <td>Total price:</td>
-        <td id="tdPrice">{{$price}}</td>
+        <td id="tdPrice">{{$command->initial_value}}</td>
         <td>Total value:</td>
-        <td id="tdValue">{{$command->value}}</td>
+        <td id="tdValue">{{$command->value ?: $price}}</td>
 
     </tr>
 </table>

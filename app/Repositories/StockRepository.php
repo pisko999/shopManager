@@ -43,24 +43,13 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
     */
     public function addFromBuy($item)
     {
-        $stocks = $this->model->where('all_product_id', $item->id_product)->where('isFoil', $item->isFoil)->where('language_id', $item->id_language)->where('state', isset($item->condition) ? $item->condition : "NM")->orderBy('price')->get();//TODO:add other criteria as signed
+        $stocks = $this->model->where('quantity', '>', 0)->where('all_product_id', $item->id_product)->where('isFoil', $item->isFoil)->where('language_id', $item->id_language)->where('state', isset($item->condition) ? $item->condition : "NM")->orderBy('price')->get();//TODO:add other criteria as signed
         if ($stocks->count() == 0)
             $stock = $this->newFromBuy($item);
         else {
             $stock = $stocks->first();
             $stock->quantity += $item->quantity;
-
-            $quantity = 0;
-            foreach ($stocks as $stock)
-                $quantity += $stock->quantity;
-            if ($quantity > 20) {
-                $stock->quantity -= $quantity - 20;
-                $stock->save();
-                $stock->error = $quantity;
-            } else
-                $stock->save();
-
-
+            $stock->save();
         }
 
         $item->Stock()->associate($stock)->save();
@@ -70,10 +59,18 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
 
     private function newFromBuy($item)
     {
-        $price = $item->price * 1.6;
-        if ($price < 0.16)
-            $price = 0.16;
-        $stocking = $price >= 1.98 ? 2 : ($price >= 0.98 ? 1 : 0);
+        $priceGuide = $item->product->priceGuide->first();
+        $price = $priceGuide != null ?
+            \App\Libraries\PriceLibrary::getPrice(
+                $item->isFoil ?
+                    $priceGuide->foilTrend :
+                    $priceGuide->trend,
+                \App\Libraries\PriceLibrary::Eur,
+                \App\Libraries\PriceLibrary::Eur
+            )
+            :
+            $item->price * 1.6;
+        $stocking = $price >= 1.98 ? 3 : ($price >= 0.98 ? 2 : 1);
         return $this->model->create([
             'all_product_id' => $item->id_product,
             'initial_price' => $item->price,

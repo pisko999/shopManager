@@ -149,4 +149,42 @@ class CommandController extends Controller
         return view('command.show', compact('command'));
     }
 
+    public function action(Request $request){
+        if(!isset($request->action) || empty($request->commandIds)) {
+            messagerieService::successMessage('No actions or commmands selected');
+            return redirect()->back();
+        }
+        $commands = $this->commandRepository->getByIds($request->commandIds);
+        \Debugbar::info($commands);
+
+        switch ($request->action) {
+            case 'address':
+                $fpdf = new pdfAddress();
+                $myAddress = Address::find(1);
+                $fpdf->init($myAddress);
+                foreach ($commands as $command) {
+                    $fpdf->show($command->delivery_address);
+                }
+                $fpdf->Output("D", "Addresses.pdf", true);
+                break;
+            case 'facture':
+                $fpdf = new pdfFacture();
+
+                foreach ($commands as $command){
+                    $fpdf->show($command);
+                }
+                $fpdf->Output("D","Factures.pdf", true);                break;
+            case 'send':
+
+                foreach ($commands as $command) {
+
+                    $this->commandRepository->setSend($command->id);
+                    messagerieService::successMessage('Command #'. $command->id . ' was marked as sent.');
+                }
+                return redirect()->back();
+        }
+
+        //return view('home');
+    }
+
 }

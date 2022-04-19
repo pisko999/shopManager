@@ -14,6 +14,8 @@ if (!isset($items))
     <thead>
     <tr>
         <th>Product name</th>
+        <th>Expansion</th>
+        <th>State</th>
         <th>Price p.u.</th>
         <th>Quantity</th>
         <th>Price</th>
@@ -24,15 +26,18 @@ if (!isset($items))
     </thead>
     <?php $price = 0; ?>
     @foreach($items as $item)
+        <?php \Debugbar::info($item->stock); ?>
         <?php $price += $item->price * $item->quantity; ?>
         <tr>
             <td>
 
-{{--                <a href="{!! route('shopping.show', ['itemId'=>$item->stock->all_product_id])  !!}">--}}
+                <a href="{!! route('shopping.show', ['id'=>$item->stock->all_product_id])  !!}">
                     {{isset($item->stock->product)?($item->stock->product->name . ( $item->stock->isFoil == 1 ? ' - foil': '')):'token?'}}
-{{--                </a>--}}
+                </a>
 
             </td>
+            <td>{{$item->stock->product->expansion->sign}}</td>
+            <td>{{$item->stock->state}}</td>
             <td>{{$item->price}}</td>
             <td>{{$item->quantity}}</td>
             <td>{{$item->price * $item->quantity}}</td>

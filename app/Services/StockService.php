@@ -23,13 +23,14 @@ class StockService
     public function addFromBuy($buyItem)
     {
         $stock = $this->stockRepository->addFromBuy($buyItem);
-
+        $doesnExist = false;
         if ($this->MKM) {
             if ($stock->idArticleMKM) {
                 $mkmStock = $this->MKMService->increaseStock($stock->idArticleMKM, $buyItem->quantity);
                 //var_dump($mkmStock);
 
                 if (isset($mkmStock->error) && str_contains($mkmStock->error, " doesn't exist in stock")) {
+                    $doesnExist = true;
                     goto ifArticleDoesntExistAnymore;
                 }
 
@@ -65,14 +66,26 @@ class StockService
                     $price = 0.16;
                 */
                 ifArticleDoesntExistAnymore:
-var_dump($buyItem);
-                if ($buyItem->isFoil)
-                    $price = $buyItem->card->usd_price_foil;
-                else
-                    $price = $buyItem->card->usd_price;
+                if ($doesnExist) {
+                    echo "card id:" . $buyItem->id . " marked by idArticleMKM:" . $stock->idArticleMKM . " not exist on MKM";
+                    var_dump($buyItem);
+                }
+                $priceGuide = $buyItem->product->priceGuide->first();
+                $price = $priceGuide != null ?
+                    \App\Libraries\PriceLibrary::getPrice(
+                        $buyItem->isFoil ?
+                            $priceGuide->foilTrend :
+                            $priceGuide->trend,
+                        \App\Libraries\PriceLibrary::Eur,
+                        \App\Libraries\PriceLibrary::Eur
+                    )
+                    :
 
-                if ($price < 0.16)
-                    $price = 0.16;
+                ($buyItem->isFoil ?
+                    $price = $buyItem->card->usd_price_foil
+                    :
+                    $price = $buyItem->card->usd_price
+                );
 
                 if ($price != null) {
                     $mkmStock = $this->MKMService->addToStock(
@@ -117,9 +130,11 @@ var_dump($buyItem);
                 }
             }
         }
+        if (!isset($stock->error)) {
+            $buyItem->added = true;
+            $buyItem->save();
+        }
 
-        $buyItem->added = true;
-        $buyItem->save();
         return $stock;
     }
 

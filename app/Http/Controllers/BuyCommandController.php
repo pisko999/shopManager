@@ -27,7 +27,7 @@ class BuyCommandController extends Controller
      */
     public function index()
     {
-        $buyCommands = $this->buyCommandsRepository->getPaginate();
+        $buyCommands = $this->buyCommandsRepository->getPaginateList();
         $links = $buyCommands->render();
         return view('buyCommand.index', compact('buyCommands', 'links'));
     }
@@ -172,36 +172,22 @@ class BuyCommandController extends Controller
         if (!$buyCommand)
             return view('404');
         $total = 0;
-        foreach ($buyCommand->items as $item) {
-            if ($item->product->stock->where('isFoil', $item->isFoil)->count() > 0)
-                $item->priceProviz = $item->product->stock->where('isFoil', $item->isFoil)->sortBy('price')->first()->price;
-            else {
-                if ($item->isFoil) {
-                    $item->priceProviz = $item->card->usd_price_foil;
-                } else {
-                    $item->priceProviz = $item->card->usd_price;
-                }
-            }
-            try {
-                if ($item->priceProviz == null || $item->priceProviz == 0)
-                    $item->priceProviz = $scryfallService->getCardByCardMarketId($item->id)->prices->usd . ($item->isFoil ? '_foil' : '');
-            } catch (\Exception $exception) {
-                $item->priceProviz = 0.16;
-            }
+        foreach ($buyCommand->itemsWithCardAndProductAndPriceGuide as $item) {
+            $priceType = $item->isFoil ? 'foilTrend' : 'trend';
+            $priceProviz[$item->id] = $item->product->priceGuide->first()->$priceType;
+            $total += $item->quantity * $priceProviz[$item->id];
 
-            $total += $item->quantity * $item->priceProviz;
-
-            //var_dump($item->priceProviz);
+            //var_dump($priceProviz[$item->id]);
         }
         $perOne = $request->value / $total;
+        \Debugbar::info($perOne);
+
         foreach ($buyCommand->items as $item) {
-            $item->price = $item->priceProviz * $perOne;
-            unset($item->priceProviz);
+            $item->price = $priceProviz[$item->id] * $perOne;
             $item->save();
 
         }
         $buyCommand->initial_value = round($request->value, 2);
-        $buyCommand->value = round($total, 2);
         $buyCommand->save();
 
         $statusRepository->updateStatus($buyCommand->status, "made");

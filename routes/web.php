@@ -44,6 +44,7 @@ Route::get('/commands', ['as' => 'commands', 'uses' => 'commandController@getCom
 Route::get('/command/type', ['as' => 'commandShowByType', 'uses' => 'commandController@showCommandsByType']);
 Route::post('/command/trackingNumber', ['as' => 'command.trackingNumber', 'uses' => 'commandController@trackingNumber']);
 Route::get('/command/sendAll', ['as' => 'command.sendAll', 'uses' => 'commandController@sendAll']);
+Route::get('/command/action', ['as' => 'command.action', 'uses' => 'commandController@action']);
 Route::post('/command/checkMKM', ['as' => 'command.checkMKM', 'uses' => 'commandController@checkMKM']);
 Route::get('/command/set/paid/{id}', ['as' => 'commandSetPaid', 'uses' => 'commandController@setPaid']);
 Route::get('/command/set/send/{id}', ['as' => 'commandSetSend', 'uses' => 'commandController@setSend']);
@@ -82,3 +83,4 @@ Route::post('/Deck/Create', ['as' => 'deck.create', 'uses' => 'DeckController@cr
 Route::get('/Deck/Check/{id}', ['as' => 'deck.check', 'uses' => 'DeckController@check']);
 Route::get('/Deck/{id}', ['as' => 'deck.show', 'uses' => 'DeckController@show']);
 
+Route::get('/shopping/{id}', ['as' => 'shopping.show', 'uses' => 'RedirectController@shopping']);

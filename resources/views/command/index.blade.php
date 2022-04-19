@@ -14,7 +14,12 @@
                             </div>
                         @endif--}}
                         <div class="row">
-                            <div class="offset-4 col-4 ">
+                            <div class="col-4">
+                                <div class="btn btn-success actions" data-action="send">send</div>
+                                <div class="btn btn-success actions" data-action="facture">facture</div>
+                                <div class="btn btn-success actions" data-action="address">address</div>
+                            </div>
+                            <div class="col-4 ">
                                 {{Form::open(['method'=>'get'])}}
                                 <label for="commandType">Type: </label>
                                 <select id="commandType" name="commandType">
@@ -37,8 +42,12 @@
                             </div>
                         </div>
                         {!! $links !!}
+                        {{Form::open(['method'=>'get', 'route' => 'command.action', 'id' => 'formCommands'])}}
+                        {{Form::hidden('action','',['id' => 'action'])}}
+
                         <table style="align: center; width: 100%">
                             <thead>
+                            <td><input type="checkbox" id="chbSelectAll" /></td>
                             <td>id</td>
                             <td>date</td>
                             @if(!Auth::guest() && Auth::user()->role >= 4)
@@ -54,6 +63,7 @@
                             <tbody class="scrolling-pagination">
                             @foreach($commands as $command)
                                 <tr>
+                                    <td><input type="checkbox" class="chbCommandId" name="commandIds[]" value="{{$command->id}}" /></td>
                                     <td class="col-md-2">
                                         <a href="{!! route('command', ['id' => $command->id])!!}">
                                             {{$command->id}} {{$command->shipping_method_id}}
@@ -128,6 +138,7 @@
                             {!! $links !!}
                             </tbody>
                         </table>
+                        {{Form::close()}}
                     </div>
                 </div>
             </div>

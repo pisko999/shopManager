@@ -34,14 +34,27 @@ class BuyCommand extends Model
     }
 
     public function ItemsWithCardAndProduct(){
-        return $this->hasMany('App\Models\BuyItem', 'id_buy_command')->with('card','product');
+        return $this->hasMany('App\Models\BuyItem', 'id_buy_command')->with('card','product', 'product.expansion', 'product.priceGuide', 'stock');
+    }
+
+    public function ItemsWithCardAndProductAndPriceGuide(){
+        return $this->ItemsWithCardAndProduct()->with('product.priceGuide');
     }
 
     public function value(){
+        //if($this->)
         $value = 0;
         foreach ($this->items as $item){
             $value += $item->price * $item->quantity;
         }
         return $value;
+    }
+
+    public function getStatus()
+    {
+        if ($this->status != null && $this->status->status != null)
+            return $this->status->status->name;
+        else
+            return null;
     }
 }

@@ -68,7 +68,8 @@ class Expansion extends Model
             */
             ->join('cards', 'cards.id', '=', 'all_products.id')
             ->with('card', 'stock', 'image', 'card.stock', 'card.rarity')
-            ->orderByRaw('LENGTH(cards.scryfallCollectorNumber)', 'ASC')
+            ->orderByRaw('LENGTH(cards.scryfallCollectorNumber)'
+            )
             ->orderBy('cards.scryfallCollectorNumber')
             ->paginate(50)
             ->appends(request()->only('id', 'foils'));
