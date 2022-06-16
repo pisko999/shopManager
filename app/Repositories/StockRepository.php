@@ -63,8 +63,8 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
         $price = $priceGuide != null ?
             \App\Libraries\PriceLibrary::getPrice(
                 $item->isFoil ?
-                    $priceGuide->foilTrend :
-                    $priceGuide->trend,
+                    ($priceGuide->foilTrend + $priceGuide->foilAvgOne + $priceGuide->foilAvgSeven) / 3 :
+                    ($priceGuide->trend + $priceGuide->avgOne + $priceGuide->avgSeven) / 3,
                 \App\Libraries\PriceLibrary::Eur,
                 \App\Libraries\PriceLibrary::Eur
             )

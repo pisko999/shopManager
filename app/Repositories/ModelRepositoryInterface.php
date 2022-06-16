@@ -4,12 +4,14 @@
 namespace App\Repositories;
 
 
+use Illuminate\Database\Eloquent\Collection;
+
 interface ModelRepositoryInterface
 {
 
     public function getPaginate($n);
 
-    public function getAll();
+    public function getAll(): Collection;
 
     public function store(Array $inputs);
 

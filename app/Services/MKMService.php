@@ -34,8 +34,11 @@ class MKMService
     private $isStatic;
     private $languages = array('cz', 'EN', 'FR', 'DE', 'ES', 'IT', 'CH', 'JA', 'PO', 'RU', 'KO', 'TCH');
 
-    private $dataBag;
-    private $dataBagCPT = 0;
+    private $dataBagAdd = [];
+    private $dataBagUpdate = [];
+    private $dataBagDelete = [];
+    private $dataBagIncrease = [];
+    private $dataBagDecrease = [];
 
     const Send = "send";
     const ConfirmReception = "confirmReception";
@@ -43,6 +46,11 @@ class MKMService
     const RequestCancellation = "requestCancellation";
     const AcceptCancellation = "acceptCancellation";
 
+    const ACTION_ADD = "manyAddSend";
+    const ACTION_UPDATE = "manyUpdateSend";
+    const ACTION_DELETE = "manyDeleteSend";
+    const ACTION_INCREASE = "manyIncreaseSend";
+    const ACTION_DECREASE = "manyDecreaseSend";
     /*
      *    1 - English
      *    2 - French
@@ -65,6 +73,44 @@ class MKMService
         $this->dataBag = array();
     }
 
+    public function __destruct(){
+        $this->manyAddSend();
+        $this->manyUpdateSend();
+        $this->manyDeleteSend();
+        $this->manyIncreaseSend();
+        $this->manyDecreaseSend();
+    }
+
+    private function manyAddSend(){
+        if(!empty($this->dataBagAdd))
+            return $this->call("stock", "POST", $this->dataBagAdd);
+        return null;
+    }
+
+    private function manyUpdateSend(){
+        if(!empty($this->dataBagUpdate))
+            return $this->call("stock", "PUT", $this->dataBagUpdate);
+        return null;
+    }
+
+    private function manyDeleteSend(){
+        if(!empty($this->dataBagDelete))
+            return $this->call("stock", "DELETE", $this->dataBagDelete);
+        return null;
+    }
+
+    private function manyIncreaseSend(){
+        if(!empty($this->dataBagIncrease))
+            return $this->call("stock", "POST", $this->dataBagIncrease);
+        return null;
+    }
+
+    private function manyDecreaseSend(){
+        if(!empty($this->dataBagDecrease))
+            return $this->call("stock", "POST", $this->dataBagDecrease);
+        return null;
+    }
+
     public function changeState($id,string $action ,string $reason = null, ?bool $relistItems = null)
     {
         $data = new changeOrderState($action, $reason, $relistItems);
@@ -73,12 +119,11 @@ class MKMService
 
     }
 
-    public function addToDataBag($idProduct, $count, $price, $condition = "MT", $language = "EN", $comments = "", $isFoil = "false", $isSigned = "false", $isAltered = "false", $isPlayset = "false")
+    public function manyAdd($idProduct, $count, $price, $condition = "NM", $language = "EN", $comments = "", $isFoil = "false", $isSigned = "false", $isAltered = "false", $isPlayset = "false", $action)
     {
-        if ($this->dataBagCPT >= 100)
-            return false;
-
-        $this->dataBagCPT++;
+        if (count($this->dataBagAdd) == 100) {
+            $this->manyAddSend();
+        }
 
         if (is_numeric($language))
             $idLanguage = $language;
@@ -98,7 +143,7 @@ class MKMService
         $data->isAltered = $isAltered;
         $data->isPlayset = $isPlayset;
 
-        array_push($this->dataBag, $data);
+        array_push($this->dataBagAdd, $data);
     }
 
     public function addToStockFromDataBag()
@@ -228,7 +273,7 @@ class MKMService
     }
 
 
-    public function addToStock($idProduct, $count, $price, $condition = "MT", $language = "EN", $comments = "", $isFoil = "false", $isSigned = "false", $isAltered = "false", $isPlayset = "false")
+    public function addToStock($idProduct, $count, $price, $condition = "NM", $language = "EN", $comments = "", $isFoil = "false", $isSigned = "false", $isAltered = "false", $isPlayset = "false")
     {
         if (is_numeric($language))
             $idLanguage = $language;
@@ -267,7 +312,7 @@ class MKMService
         return $this->call("stock/decrease", "PUT", $data);
     }
 
-    public function changeArticleInStock($idArticle, $count, $price, $condition = "MT", $language = "EN", $comments = "", $isFoil = "false", $isSigned = "false", $isAltered = "false", $isPlayset = "false")
+    public function changeArticleInStock($idArticle, $count, $price, $condition = "NM", $language = "EN", $comments = "", $isFoil = "false", $isSigned = "false", $isAltered = "false", $isPlayset = "false")
     {
         $idLanguage = array_search(strtoupper($language), $this->languages);
 
@@ -294,6 +339,20 @@ class MKMService
         $data->count = $count;
 
         return $this->call("stock", "DELETE", $data);
+
+    }
+
+    public function deleteManyFromStock($articles)
+    {
+        $datas = new baseArticles();
+        foreach($articles as $article) {
+            $data = new baseArticle();
+            $data->idArticle = $article->idArticleMKM;
+            $data->count = $article->quantity;
+            $datas->addProduct($data);
+        }
+
+        return $this->call("stock", "DELETE", $datas);
 
     }
 
@@ -616,7 +675,22 @@ class trackingNumber extends request{
 return '<trackingNumber>' . $this->trackingNumber . '</trackingNumber>';    }
 }
 
+class baseArticles extends request
+{
+    private array $baseArticles;
 
+    public function addProduct(baseArticle $article) {
+        $this->baseArticles[] = $article;
+    }
+
+    public function getPureXml() {
+        $str = '';
+        foreach ($this->baseArticles as $baseArticle) {
+            $str .= $baseArticle->getPureXML();
+        }
+        return $str;
+    }
+}
 class baseArticle extends request
 {
     public $idArticle;

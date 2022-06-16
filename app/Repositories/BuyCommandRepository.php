@@ -40,10 +40,11 @@ class BuyCommandRepository extends ModelRepository implements BuyCommandReposito
         $buyCommand = \Auth::user()->getActualBuyCommand();
         if(!$buyCommand)
             $buyCommand = $this->new();
-
+//\Debugbar::info($data);
         foreach ($data as $key => $value){
-            if(str_contains($key,'quantity') && $value != null && $value > 0)
-            $buyCommand->Items()->save(new BuyItem(['id_product' => substr($key,8),'price' => 0,'quantity' => $value, 'isFoil' => $data['foils']]));
+            if(str_contains($key,'quantity') && $value != null && $value > 0) {
+                $buyCommand->Items()->save(new BuyItem(['id_product' => substr($key, 8), 'price' => 0, 'quantity' => $value, 'isFoil' => $data['foils']]));
+            }
         }
         return true;
     }

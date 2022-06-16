@@ -6,7 +6,7 @@
  * Time: 19:36
  */
 $items = $command->ItemsWithCardAndProduct;
-
+\Debugbar::info($items);
 ?>
 
 <table width="100%">
@@ -25,6 +25,7 @@ $items = $command->ItemsWithCardAndProduct;
     </tr>
     </thead>
     <?php $price = 0; ?>
+
     @foreach($items as $item)
         <?php
         $priceGuide = $item->product->priceGuide->first();
@@ -35,8 +36,8 @@ $items = $command->ItemsWithCardAndProduct;
                 $priceGuide != null ?
                 \App\Libraries\PriceLibrary::getPrice(
                     $item->isFoil ?
-                        $priceGuide->foilTrend :
-                        $priceGuide->trend,
+                        ($priceGuide->foilTrend + $priceGuide->foilAvgOne + $priceGuide->foilAvgSeven) / 3 :
+                        ($priceGuide->trend + $priceGuide->avgOne + $priceGuide->avgSeven) / 3,
                     \App\Libraries\PriceLibrary::Eur,
                     \App\Libraries\PriceLibrary::Eur
                 )
@@ -51,7 +52,7 @@ $items = $command->ItemsWithCardAndProduct;
             <td>{{$item->id}}</td>
             <td>
                 {{--                <a href="{!! route('shopping.show', ['itemId'=>$item->id_product])  !!}">{{$item->product->name . ($item->isFoil ? ' - foil': '')}}</a>--}}
-                <a href="https://www.cardmarket.com/en/Magic/Products/Singles/{{strtr( $item->product->expansion->name, [' ' => '-', 'Core' => 'Core-Set',':' => '', '`' => ''])}}/{{strtr($item->product->name,[',' => '', '// ' => '', ' ' => '-',':' => '', '`' => ''])}}">
+                <a href="https://www.cardmarket.com/en/Magic/Products/Singles/{{strtr($item->product->expansion->name, [' ' => '-', 'Core' => 'Core-Set',':' => '', '`' => ''])}}/{{strtr($item->product->name,[',' => '', '// ' => '', ' ' => '-',':' => '', '`' => '', "'" => ''])}}">
                     {{$item->product->name . ($item->isFoil ? ' - foil': '')}}
                 </a>
             </td>

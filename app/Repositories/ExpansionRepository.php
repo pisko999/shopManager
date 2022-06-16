@@ -220,5 +220,8 @@ class ExpansionRepository extends ModelRepository implements ExpansionRepository
     public function getByMKMId($id){
         return $this->model->where('idMKM',$id)->first();
     }
+    public function getAllByReleased(){
+        return $this->model->orderBy('release_date', 'desc')->get();
+    }
 
 }

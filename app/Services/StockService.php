@@ -74,8 +74,8 @@ class StockService
                 $price = $priceGuide != null ?
                     \App\Libraries\PriceLibrary::getPrice(
                         $buyItem->isFoil ?
-                            $priceGuide->foilTrend :
-                            $priceGuide->trend,
+                            ($priceGuide->foilTrend + $priceGuide->foilAvgOne + $priceGuide->foilAvgSeven) / 3 :
+                            ($priceGuide->trend + $priceGuide->avgOne + $priceGuide->avgSeven) / 3,
                         \App\Libraries\PriceLibrary::Eur,
                         \App\Libraries\PriceLibrary::Eur
                     )
@@ -112,7 +112,7 @@ class StockService
                             //TODO: use $session
                             if (isset($stock->error)) {
                                 $error = $stock->error;
-                                $stock->remove(error);
+                                $stock->remove($error);
                                 $stock->save();
                                 $stock->error = $error;
                             } else
@@ -250,5 +250,10 @@ class StockService
         return $stock;
     }
 
-
+    public function deleteMany( $items) {
+        var_dump($this->MKMService->deleteManyFromStock($items));
+        foreach ($items as $item) {
+            $item->delete();
+        }
+    }
 }

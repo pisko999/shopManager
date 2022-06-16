@@ -15,4 +15,5 @@ interface ExpansionRepositoryInterface extends ModelRepositoryInterface
     public function getNonLinked();
     public function getLinked();
     public function getByMKMId($id);
+    public function getAllByReleased();
 }

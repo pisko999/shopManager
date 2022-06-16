@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AllProduct extends Model
 {
-    protected $fillable = ['id', 'name', 'MKMCollectorNumber','idCategory', 'idExpansion', 'idMetaproduct', 'added'];
+    protected $fillable = ['id', 'name', 'MKMCollectorNumber','idCategory', 'idExpansion', 'idMetaproduct', 'added', 'update'];
 
     public $timestamps = false;
 
@@ -40,7 +40,6 @@ class AllProduct extends Model
     }
 
     public function priceGuide(){
-        $date = \Carbon\Carbon::now()->toDateString();
-        return $this->hasMany('App\Models\PriceGuide', 'idProduct', 'id')->where('date', $date)->orderBy('date','desc');
+        return $this->hasMany('App\Models\PriceGuide', 'idProduct', 'id')->orderBy('date','desc');
     }
 }

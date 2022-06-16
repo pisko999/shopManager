@@ -55,6 +55,7 @@ class BuyCommandController extends Controller
 
     public function show($id)
     {
+        ini_set('memory_limit', '1024M');
         $buyCommand = $this->buyCommandsRepository->getById($id);
         if (!$buyCommand)
             return view('404');

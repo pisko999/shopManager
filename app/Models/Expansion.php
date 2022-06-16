@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Expansion extends Model
 {
 
-    protected $fillable = ['idMKM', 'name', 'symbol_path', 'sign', 'type', 'release_date', 'isReleased', 'added'];
+    protected $fillable = ['idMKM', 'name', 'symbol_path', 'sign', 'type', 'release_date', 'isReleased', 'added', 'update'];
 
     public $timestamps = false;
 

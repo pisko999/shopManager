@@ -82,7 +82,7 @@ class PriceLibrary
     }
 
     private static function roundEur($price) {
-        $price *= 1.2;
+        $price *= 1.1;
         foreach (self::$pricesEur as $p) {
             if($price <= $p)
                 return $p;
