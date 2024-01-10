@@ -8,7 +8,7 @@
                     <div class="card-header">Choice what you want</div>
 
                     <div class="card-body">
-                        {!! $links !!}
+                        {!! $buyCommands->links() !!}
                         <table style="align: center; width: 100%">
                             <thead>
                             <td>id</td>

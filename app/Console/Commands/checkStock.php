@@ -84,8 +84,9 @@ class checkStock extends Command
         }
 
         //filtering collection of foils, signed, playset and altered cards to make collection smaller due to time needed
+         // todo: languages
         $mkmStockFSAP = $mkmStock->filter(function ($value, $key) {
-            return $value->foil || $value->signed || $value->playset || $value->altered;
+            return $value->foil || $value->signed || $value->playset || $value->altered || $value->language != 1;
         });
 
         //filtering rest of cards
@@ -93,7 +94,7 @@ class checkStock extends Command
 
         //filtering foil, signed , playset and altered cards from server
         $stockFSAP = $stock->filter(function ($value, $key) {
-            return $value->isFoil || $value->signed || $value->playset || $value->altered;
+            return $value->isFoil || $value->signed || $value->playset || $value->altered || $value->language_id != 1;
         });
 
         //filtering rest of cards from server

@@ -1,0 +1,13 @@
+.giftItemRow:hover{
+    background: lightblue;
+}
+.mythicRow{
+    background: lightcoral;
+}
+.rareRow{
+    background: lightyellow;
+}
+
+.uncommonRow{
+    background: lightgrey;
+}

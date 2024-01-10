@@ -26,6 +26,7 @@ class Countries
         'IE' => 'Ireland, Republic of (EIRE)',
         'IS' => 'Iceland',
         'IT' => 'Italy',
+        'LI' => 'Liechtenstein',
         'LT' => 'Lithuania',
         'LU' => 'Luxembourg',
         'LV' => 'Latvia',

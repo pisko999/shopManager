@@ -82,9 +82,11 @@ class addToStockFromReBuy extends Command
                 $total += $stock->price * $item->quantity;
             }
             foreach($messages as $message) {
+                echo "messages\n";
                 var_dump($message);
             }
             foreach ($errors as $error) {
+                echo "errors\n";
                 var_dump($error);
             }
             $this->buyCommandRepository->setValue($buyCommand, $total);

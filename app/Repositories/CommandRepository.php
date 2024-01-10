@@ -16,6 +16,7 @@ use App\Models\Address;
 use App\Models\Command;
 use App\Models\Complaint;
 use App\Models\Evaluation;
+use App\Models\Gift;
 use App\Models\Method;
 use App\Models\ShippingMethod;
 use \App\Models\Status;
@@ -36,9 +37,10 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
     protected $evaluationRepository;
     protected $addressRepository;
     protected $statusNamesRepository;
+    protected $giftItemsRepository;
     protected $MKMService;
 
-    private $nbrPerPage = 25;
+    private $nbrPerPage = 50;
 
     public function __construct(
         Command $command,
@@ -50,6 +52,7 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
         EvaluationRepositoryInterface $evaluationRepository,
         AddressRepositoryInterface $addressRepository,
         StatusNamesRepositoryInterface $statusNamesRepository,
+        GiftItemRepositoryInterface $giftItemsRepository,
         MKMService $MKMService
     )
     {
@@ -62,6 +65,7 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
         $this->evaluationRepository = $evaluationRepository;
         $this->addressRepository = $addressRepository;
         $this->statusNamesRepository = $statusNamesRepository;
+        $this->giftItemsRepository = $giftItemsRepository;
         $this->MKMService = $MKMService;
     }
 
@@ -83,12 +87,12 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
 
     public function getById($id)
     {
-        return $this->model->where('id', $id)->with('items')->first();
+        return $this->model->where('id', $id)->with('items', 'items.stock', 'items.stock.product', 'items.stock.product.expansion', 'items.stock.product.image')->first();
     }
 
     public function getByIds($ids)
     {
-        return $this->model->whereIn('id', $ids)->with('items')->with('status')->get()->sortBy('status.date_paid');
+        return $this->model->whereIn('id', $ids)->with('items')->with('status')->with('gifts', 'gifts.giftItems', 'gifts.giftItems.product')->get()->sortBy('status.date_paid');
     }
 
     public function getByUser($user)
@@ -193,14 +197,29 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
         return $command;
     }
 
-    public function getCommandsPaginate($type)
+    public function getCommandsPaginate($type, $presale = false)
     {
-        if ($type != 0)
-            $commands = $this->model->with('status')->where('is_presale', '=', 0)->whereHas('status', function ($q) use ($type) {
-                return $q->where('status_id', '=', $type);
-            })->paginate($this->nbrPerPage);
-        else
-            $commands = $this->model->paginate($this->nbrPerPage);
+        $orderByDate = match($type) {
+            // 1 => 'date_bought',
+            '2' => 'date_paid',
+            '3', '5' => 'date_sent',
+            '4', '12' => 'date_received',
+            6 => 'date_canceled',
+            default => 'date_bought'
+        };
+        $direction = $type == 2 ? 'asc' : 'desc';
+        if ($type != 0) {
+            $commands = $this->model
+                ->with('status', 'items', 'gifts', 'status.status','status.name', 'client','billing_address', 'shippingMethod', 'shippingMethod.method')
+                ->where('is_presale', '=', $presale)
+                ->whereHas('status', function ($q) use ($type) {
+                    return $q->where('status_id', '=', $type);
+                })
+                ->orderBy(Status::select($orderByDate)->whereColumn('statuses.id', 'commands.status_id'), $direction)
+                ->paginate($this->nbrPerPage);
+        } else{
+            $commands = $this->model->paginate($this->nbrPerPage)->sortBy('status.date_paid');
+            }
         return $commands;
     }
 
@@ -309,7 +328,7 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
             $changed = true;
         }
         $address = $this->addressRepository->createFromMKM($data->shippingAddress);
-        if($address->wasRecentlyCreated){
+        if($address->wasRecentlyCreated || $address != $command->delivery_address){
             $command->delivery_address()->associate($address);
             echo "Address changed\n";
             $changed = true;
@@ -369,7 +388,7 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
             return false;
         if(!$command->delivery_address)
             return $command->status->setSold();
-        return$command->status->setPaid();
+        return $command->status->setPaid();
     }
 
     public function acceptCancellation($id, $relistItems)
@@ -405,5 +424,47 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
 
         $command = $this->createFromMKM($command->order, $dateStock);
         return $command;
+    }
+
+    public function addGift($id, $count)
+    {
+        $command = $this->getById($id);
+        if (!$command || $command->gifts->count()) {
+            return false;
+        }
+
+        $gift = new Gift();
+        $gift->Command()->associate($command);
+        $gift->save();
+
+        $giftItems = $this->giftItemsRepository->getRandomGifts(2,$count);
+        foreach($giftItems as $giftItem) {
+            $giftItem->gifts()->attach($gift,['quantity' => 1]);
+        }
+        return count($giftItems);
+    }
+    public function getSoldByMonth($month, $year){
+        return $this->model
+            ->whereHas('status', function ($q) use ($month, $year){
+                $q->whereRaw('MONTH(date_paid) = ' . $month)->whereRaw('YEAR(date_paid) = ' . $year);
+//            })
+//            ->whereHas('items', function($q) {
+//                $q->whereHas('stock', function ($q) {
+//                    $q->whereHas('buyItems');
+////                    $q->whereDoesntHave('buyItems');
+//                });
+            })->with('items','items.stock', 'items.stock.buyItems', 'items.stock.product','status','buyer', 'billing_address')
+            ->orderBy(Status::select('date_paid')->whereColumn('statuses.id', 'commands.status_id'));
+            ;
+    }
+
+    public function getBoughtInstoreByMonth($month, $year)
+    {
+        return $this->model
+            ->whereHas('status', function ($q) use ($month, $year){
+                $q->whereRaw('MONTH(date_bought) = ' . $month)->whereRaw('YEAR(date_bought) = ' . $year);
+            })->whereNull('idOrderMKM')->with('items')
+            ->orderBy(Status::select('date_paid')->whereColumn('statuses.id', 'commands.status_id'));
+        ;
     }
 }

@@ -224,4 +224,23 @@ class ExpansionRepository extends ModelRepository implements ExpansionRepository
         return $this->model->orderBy('release_date', 'desc')->get();
     }
 
+    public function getAllWithType() {
+        return $this->model->whereNotNull('type')->orderBy('type')->orderBy('release_date')->get();
+    }
+
+    public function getAllGrouped($column, $idGame = null) {
+        $model = $this->model;
+        if ($idGame) {
+            $model = $model->where('idGame', '=', $idGame);
+        }
+        return $model->get()->groupBy(function($data) use ($column){return $data->$column;});
+    }
+    public function getByIds($ids){
+        return $this->model->whereIn('id', $ids)->get();
+    }
+
+    public function getBySign($sign)
+    {
+        return $this->model->where('sign', $sign)->first();
+    }
 }

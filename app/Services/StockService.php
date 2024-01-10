@@ -20,7 +20,7 @@ class StockService
             $this->MKMService = new MKMService();
     }
 
-    public function addFromBuy($buyItem)
+    public function addFromBuy($buyItem, $presale = false)
     {
         $stock = $this->stockRepository->addFromBuy($buyItem);
         $doesnExist = false;
@@ -86,6 +86,10 @@ class StockService
                     :
                     $price = $buyItem->card->usd_price
                 );
+                $lowPriceName = $buyItem->isFoil ? 'foilLow' : 'lov';
+                if ($priceGuide != null && $price < $priceGuide->$lowPriceName) {
+                    $price = 1.2 * $priceGuide->$lowPriceName;
+                }
 
                 if ($price != null) {
                     $mkmStock = $this->MKMService->addToStock(
@@ -94,7 +98,7 @@ class StockService
                         $price,
                         $buyItem->state,
                         $buyItem->id_language,
-                        '',
+                        $buyItem->is_new? 'New' : '',
                         $buyItem->isFoil ? 'true' : 'false',
                         $buyItem->signed ? 'true' : 'false',
                         $buyItem->altered ? 'true' : 'false',

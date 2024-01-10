@@ -17,6 +17,7 @@ use App\Models\Stock;
 use App\Models\Product;
 use App\Objects\StockFileItem;
 use App\Services\MKMService;
+use Illuminate\Http\Request;
 
 class StockRepository extends ModelRepository implements StockRepositoryInterface
 {
@@ -43,7 +44,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
     */
     public function addFromBuy($item)
     {
-        $stocks = $this->model->where('quantity', '>', 0)->where('all_product_id', $item->id_product)->where('isFoil', $item->isFoil)->where('language_id', $item->id_language)->where('state', isset($item->condition) ? $item->condition : "NM")->orderBy('price')->get();//TODO:add other criteria as signed
+        $stocks = $this->model->where('quantity', '>', 0)->where('all_product_id', $item->id_product)->where('isFoil', $item->isFoil)->where('language_id', $item->id_language)->where('state', isset($item->condition) ? $item->condition : "NM")->where('is_new', $item->is_new)->orderBy('price')->get();//TODO:add other criteria as signed
         if ($stocks->count() == 0)
             $stock = $this->newFromBuy($item);
         else {
@@ -82,7 +83,10 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
             'signed' => $item->signed,
             'playset' => $item->playset,
             'altered' => $item->altered,
-            'state' => $item->state
+            'state' => $item->state,
+            'is_new' => $item->is_new,
+            'update' => 1,
+            'comments' => $item->is_new ? 'New' : ''
         ]);
     }
 
@@ -422,6 +426,12 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
             $item->state = $mkmItem->condition;
         }
 
+        //condition
+        if ($item->state != $mkmItem->condition) {
+            $changed->push(['type' => 'state', [$item->id,$mkmItem->idArticle, $item->state]]);
+            $item->state = $mkmItem->condition;
+        }
+
         //comments
         if ($item->comments != $mkmItem->comments) {
             $changed->push(['type' => 'comments', [$item->id, $mkmItem->idArticle, $item->comments]]);
@@ -460,6 +470,16 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
             'altered' => isset($data->isAltered) ? boolval($data->isAltered) : null,
             'state' => isset($data->condition) ? $data->condition : "NM",
         ])->first();
+    }
+    public function getStock(Request $request){
+        $nbrPerPage = $request->input('nbrPerPage', 25);
+        if ($request->input('name')) {
+            $searchTerm = $request->input('name');
+            return Stock::whereHas('product', function ($query) use ($searchTerm) {
+                $query->where('name', 'like', '%' . $searchTerm . '%');
+            })->paginate($nbrPerPage);
+        }
+        return $this->model->paginate($nbrPerPage);
     }
 
 }

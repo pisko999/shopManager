@@ -168,7 +168,7 @@ class BuyCommandController extends Controller
 
     public function editionMake($id, Request $request, ScryfallService $scryfallService, StatusRepositoryInterface $statusRepository)
     {
-        \Debugbar::info($request->all());
+//        \Debugbar::info($request->all());
         $buyCommand = $this->buyCommandsRepository->getById($id);
         if (!$buyCommand)
             return view('404');

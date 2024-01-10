@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BuyCommand extends Model
 {
-    protected $fillable = ['id_status','comments', 'initial_value', 'value'];
+    protected $fillable = ['id_status','comments', 'initial_value', 'value', 'document_no'];
 
 
     public function Client(){
@@ -34,7 +34,7 @@ class BuyCommand extends Model
     }
 
     public function ItemsWithCardAndProduct(){
-        return $this->hasMany('App\Models\BuyItem', 'id_buy_command')->with('card','product', 'product.expansion', 'product.priceGuide', 'stock');
+        return $this->hasMany('App\Models\BuyItem', 'id_buy_command')->with('card','product', 'product.expansion', 'product.priceGuide', 'stock', 'product.image');
     }
 
     public function ItemsWithCardAndProductAndPriceGuide(){

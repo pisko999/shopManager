@@ -4,7 +4,8 @@
 namespace App\Repositories;
 
 
-use App\models\AllProduct;
+use App\Libraries\PriceLibrary;
+use App\Models\AllProduct;
 use App\Models\BuyCommand;
 use App\Models\BuyItem;
 use App\models\Categories;
@@ -41,9 +42,30 @@ class BuyCommandRepository extends ModelRepository implements BuyCommandReposito
         if(!$buyCommand)
             $buyCommand = $this->new();
 //\Debugbar::info($data);
+        $ids = [];
+        foreach (array_keys($data) as $key) {
+            $row = explode('_', $key);
+            if (isset($row[2])) {
+                $ids[] = $row[2];
+            }
+        }
+        $products = AllProduct::whereIn('id', $ids)->with(['priceGuide' => function ($query) {
+            $query->orderBy('date', 'desc');
+        }])->get();
         foreach ($data as $key => $value){
             if(str_contains($key,'quantity') && $value != null && $value > 0) {
-                $buyCommand->Items()->save(new BuyItem(['id_product' => substr($key, 8), 'price' => 0, 'quantity' => $value, 'isFoil' => $data['foils']]));
+                $row = explode('_', $key);
+                $condition = strtoupper($row[1]);
+                $id = $row[2];
+                $buyCommand->Items()->save(
+                    new BuyItem([
+                        'id_product' => $id,
+                        'price' => $products->find($id)->priceGuide->first()?->{$data['foils'] ? 'foilTrend' : 'trend'} * 0.9 * PriceLibrary::getCoeficient($condition),
+                        'quantity' => $value,
+                        'isFoil' => $data['foils'],
+                        'state' => $condition]
+                    )
+                );
             }
         }
         return true;
@@ -65,5 +87,29 @@ class BuyCommandRepository extends ModelRepository implements BuyCommandReposito
     public function setValue($buyCommand, $value) {
         $buyCommand->value = $value;
         $buyCommand->save();
+    }
+    public function getBoughtByMonth($month, $year){
+        return $this->model
+            ->whereHas('status', function ($q) use ($month, $year) {
+                $q->where('status_id', 10)->whereRaw('MONTH(date_paid) = ' . $month)->whereRaw('YEAR(date_paid) = ' . $year);
+            })
+            ->where('id_client', '!=', 2985)
+            ->with('client', 'client.address', 'items', 'items.stock', 'items.stock.product');
+    }
+    public function getBoughtFromSroBeginning($month, $year){
+        if ($month == 12) {
+            $year++;
+            $month = 1;
+        } else {
+            $month++;
+        }
+        return $this->model
+            ->whereHas('status', function ($q) use ($month, $year) {
+                $q->where('status_id', 10)->whereRaw('date_paid >= "2022-12-01"')->whereRaw('date_paid < "' . $year . '-' . $month . '-01"');
+            })
+            ->whereHas('items', function($q) {
+                $q->whereRaw('sold_quantity != quantity');
+            })
+            ->with('client', 'client.address', 'items', 'items.stock', 'items.stock.product');
     }
 }

@@ -64,6 +64,9 @@ Route::get('/test', ['as' => 'test', 'uses' => 'App\Http\Controllers\testControl
 Route::get('/stockEditSelect', ['as' => 'stockEditSelect', 'uses' => 'App\Http\Controllers\stockController@stockEditSelect']);
 Route::get('/stockEditGet', ['as' => 'stockEditGet', 'uses' => 'App\Http\Controllers\stockController@stockEditGet']);
 Route::post('/stock/{id}/UpdateQuantity', ['as' => 'stockUpdateQuantity', 'uses' => 'App\Http\Controllers\stockController@stockUpdateQuantity']);
+Route::get('/stock', ['as' => 'stock.index', 'uses' => 'App\Http\Controllers\stockController@index']);
+Route::get('/stock/edit/{id?}', ['as' => 'stock.edit', 'uses' => 'App\Http\Controllers\stockController@edit']);
+Route::post('/stock/save/{id?}', ['as' => 'stock.save', 'uses' => 'App\Http\Controllers\stockController@save']);
 
 
 Route::get('/stocking', ['as' => 'stockingList', 'uses' => 'App\Http\Controllers\StockingController@stockingList']);
@@ -84,10 +87,24 @@ Route::post('/Deck/Create', ['as' => 'deck.create', 'uses' => 'App\Http\Controll
 Route::get('/Deck/Check/{id}', ['as' => 'deck.check', 'uses' => 'App\Http\Controllers\DeckController@check']);
 Route::get('/Deck/{id}', ['as' => 'deck.show', 'uses' => 'App\Http\Controllers\DeckController@show']);
 
+Route::get('/GiftList', ['as' => 'giftList.index', 'uses' => 'App\Http\Controllers\GiftListController@index']);
+Route::post('/GiftList/Create', ['as' => 'giftList.create', 'uses' => 'App\Http\Controllers\GiftListController@create']);
+Route::get('/GiftList/{id}', ['as' => 'giftList.show', 'uses' => 'App\Http\Controllers\GiftListController@show']);
+Route::get('/GiftList/{id}/delete', ['as' => 'giftList.delete', 'uses' => 'App\Http\Controllers\GiftListController@delete']);
+Route::get('/GiftList/GiftItem/{id}/delete', ['as' => 'giftList.deleteItem', 'uses' => 'App\Http\Controllers\GiftListController@deleteItem']);
+Route::get('/GiftList/{id}/AddFromExpansion', ['as' => 'giftList.addFromExpansion', 'uses' => 'App\Http\Controllers\GiftListController@showAddByExpansion']);
+Route::post('/GiftList/{id}/AddProduct/{idProduct}', ['as' => 'giftList.addProduct', 'uses' => 'App\Http\Controllers\GiftListController@addProduct']);
+Route::get('/GiftList/{id}/showGifts', ['as' => 'giftList.showGifts', 'uses' => 'App\Http\Controllers\GiftListController@showGifts']);
+
 Route::get('/shopping/{id}', ['as' => 'shopping.show', 'uses' => 'App\Http\Controllers\RedirectController@shopping']);
 Route::get('/info', function (){return phpinfo();});
 
 Route::get('/expansions', function () {return view('expansion.index'); })->name('expansion.index');
+Route::get('/expansionCards', ['as' => 'expansion.card', 'uses' => 'App\Http\Controllers\ExpansionController@show']);
+Route::post('/expansionCards', ['as' => 'expansion.cardPost', 'uses' => 'App\Http\Controllers\ExpansionController@showCards']);
+Route::get('/expansion/changeUpdate/{id}', ['as' => 'expansions.changeUpdate', 'uses' => 'App\Http\Controllers\ExpansionController@changeUpdate']);
+Route::get('/expansion/show/{id}', ['as' => 'expansions.show', 'uses' => 'App\Http\Controllers\ExpansionController@showExpansion']);
+Route::get('/expansion/{idGame?}/{type?}', ['as' => 'expansions', 'uses' => 'App\Http\Controllers\ExpansionController@index']);
 
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

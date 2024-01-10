@@ -81,6 +81,20 @@ class BuyItemRepository extends ModelRepository implements BuyItemRepositoryInte
 
         return $item->quantity;
     }
+    public function separate($id, $data){
+        $item = $this->model->find($id);
+        $item->quantity -= $data['quantity'];
+        if ($item->quantity < 1) {
+            return null;
+        }
+        $newItem = $item->replicate();
+        $newItem->quantity = $data['quantity'];
+        $newItem->save();
+        $item->save();
+        return $newItem;
+
+    }
+
 
     public function getByStocking(BuyCommand $buyCommand, $stocking){
         return $buyCommand->Items()->whereHas('stock', function ($q) use ($stocking){
@@ -119,5 +133,8 @@ class BuyItemRepository extends ModelRepository implements BuyItemRepositoryInte
         $item->price = $data['price'];
         $item->save();
         return $item->price;
+    }
+    public function getByIdStock($idStock) {
+        return $this->model->where('id_stock', $idStock);
     }
 }

@@ -174,6 +174,11 @@ class MKMService
         return $this->call("account");
     }
 
+    public function getUser($id)
+    {
+        return $this->call('users/' . $id);
+    }
+
     public function getExpansions($idGame = 1)
     {
         $this->isStatic = true;
@@ -203,10 +208,27 @@ class MKMService
         return $this->call("stock/" . $starting);
     }
 
-    public function getPriceGuide()
+    public function getPriceGuide($idGame = 1)
     {
-        $this->isStatic = true;
-        return $this->call("priceguide");
+//        $this->isStatic = true;
+        return $this->call("priceguide");// . ($idGame != 1 ? '?idgame=' . $idGame : ''));
+    }
+    public function savePriceGuideList($idGame = 6)
+    {
+        Storage::delete('MKMResponses/priceguide/data.json');
+        $response = $this->getPriceGuide($idGame);
+        \Debugbar::info($response);
+        if (!isset($response->priceguidefile))
+            return false;
+
+        $priceGuideListCoded = $response->priceguidefile;
+
+        $priceGuideList = base64_decode($priceGuideListCoded);
+        $priceGuidelistCSV = gzdecode($priceGuideList);
+        $date = \Carbon\Carbon::now()->toDateString();
+        Storage::put('MKMResponses/priceGuideList/' . $date . '-priceGuideList-' . $idGame . '.csv', $priceGuidelistCSV);
+
+        return true;
     }
 
 //bought or 1

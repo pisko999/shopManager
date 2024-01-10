@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Command extends Model
 {
-    protected $fillable = ['id', 'client_id', 'billing_address_id', 'delivery_address_id', 'payment_id', 'status_id', 'idOrderMKM', ' tracking_number', 'temporary_email', 'is_presale'];
+    protected $fillable = ['id', 'client_id', 'billing_address_id', 'delivery_address_id', 'payment_id', 'status_id', 'idOrderMKM', ' tracking_number', 'temporary_email', 'is_presale', 'invoice_no'];
 
     public function client()
     {
@@ -85,5 +85,10 @@ class Command extends Model
             return $this->status->status->name;
         else
             return null;
+    }
+
+    public function gifts()
+    {
+        return $this->hasMany(Gift::class);
     }
 }

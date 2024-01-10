@@ -12,9 +12,20 @@ class pdfFacture extends FPDF
     private $facture;
     private $centerPage = 115;
 
+    private $perPage = 27;
+
+    private $wrongChars = ["ě","č", "Č", "ř", "ų"];
+    private $rightChars = ["e", "c", "C", "r", "u"];
+
+    private $tva = [
+        0 => 0,
+        21 => 0
+    ];
     function show($facture)
     {
         $this->facture = $facture;
+        $this->tva[0] = 0;
+        $this->tva[21] = 0;
 
         $this->newPage();
 
@@ -44,11 +55,35 @@ class pdfFacture extends FPDF
             $this->printCenteredText("mtg@mtgforfun.cz", $firstLine + 15);
         }
 
+        if (count($this->facture->gifts)) {
+            $this->printCenteredText("MERRY CHRISTMAS", $firstLine + 20);
+            $this->printCenteredText("It is Christmas time And I want to celebrate it with you :)", $firstLine + 22);
+            $this->printCenteredText("I opened one Kaldheim Set Booster box,", $firstLine + 24);
+            $this->printCenteredText("and someone will receive BETA Forest", $firstLine + 26);
+            $this->printCenteredText("Your randomly chosen card are: ", $firstLine + 28);
+
+
+        }
+        $i = 0;
+        foreach($this->facture->gifts as $gift) {
+            foreach($gift->giftItems as $giftItem) {
+                $i++;
+                $this->printCenteredText($giftItem->product->name, $firstLine + 29 + $i);
+            }
+        }
+
+        if (count($this->facture->gifts)) {
+            $this->printCenteredText("Video from unboxing", $firstLine + 32 + $i, 55);
+            $this->Image(getcwd() . '/storage/christmas_youtube_2023.png',$this->centerPage - 80,6 * ($firstLine + 33 + $i), 50,50);
+            $this->printCenteredText("Whole list of cards", $firstLine + 32 + $i, -45);
+            $this->Image(getcwd() . '/storage/giftlist2.png',$this->centerPage + 20,6 * ($firstLine + 33 + $i), 50,50);
+        }
+
 
     }
 
-    private function printCenteredText($text, $line){
-        $this->text($this->centerPage - $this->GetStringWidth($text) / 2,6 * $line, $text);
+    private function printCenteredText($text, $line, $left = 0){
+        $this->text($this->centerPage - $this->GetStringWidth($text) / 2 - $left,6 * $line, $text);
 
 }
 
@@ -75,32 +110,42 @@ class pdfFacture extends FPDF
         $this->SetXY(125, 10);
         $this->showFactureHead();
 
-        $this->SetXY(10, 50);
+        $this->SetXY(10, 30);
         $this->SetFont('Arial', '', 10);
-        $this->showAddress($this->getAddressString($this->facture->storekeeper->address), 6);
+        $this->showAddress($this->getAddressString($this->facture->storekeeper->address), 5);
+        $this->SetFont('Arial', '', 8);
+        $this->text(11,60,"IC: 17662672");
+        $this->text(11,64,"DIC (VAT ID): CZ17662672");
+        $this->text(11,68,"IBAN: CZ4720100000002702375690");
+        $this->text(11,72,"BIC: FIOBCZPPXXX");
 
         $this->SetXY(125, 50);
         $this->SetFont('Arial', '', 12);
         $this->showAddress($this->getAddressString($this->facture->billing_address), 6);
+        if ($this->facture->client->mkm_is_commercial) {
+            $this->cell(115,6);
+            $this->cell(50,6, 'VAT ID: ' . $this->facture->client->vat_id);
+        }
 
     }
 
     private function showAddress($address, $h)
     {
         try {
-            $this->MultiCell(85, $h, iconv('UTF-8', 'windows-1250', $address), 0, "L");
+            $this->MultiCell(85, $h, iconv('UTF-8', 'windows-1250', str_replace($this->wrongChars, $this->rightChars, $address)), 0, "L");
         } catch (\Exception $e) {
-            $this->MultiCell(85, $h, iconv('UTF-8', 'windows-1252', $address), 0, "L");
-
+            error_log($address);
+            $this->MultiCell(85, $h, iconv('UTF-8', 'windows-1252', str_replace($this->wrongChars, $this->rightChars, $address)), 0, "L");
         }
     }
 
     private function showHead()
     {
-        $head = $this->getHeadString();
-        $this->SetFont('Arial', '', 24);
-
-        $this->MultiCell(95, 20, iconv('UTF-8', 'windows-1252', $head), 0, "L");
+        $this->Image(getcwd() . '/storage/title-black.png',10,10, 50,12);
+//        $head = $this->getHeadString();
+//        $this->SetFont('Arial', '', 24);
+//
+//        $this->MultiCell(95, 20, iconv('UTF-8', 'windows-1252', str_replace(["ě","č", "Č", "ř"], ["e", "c", "C", "r"], $head)), 0, "L");
 
     }
 
@@ -109,7 +154,7 @@ class pdfFacture extends FPDF
         $this->SetFont('Arial', '', 12);
 
         $factureHead = $this->getFactureHeadString($this->facture);
-        $this->MultiCell(95, 8, iconv('UTF-8', 'windows-1252', $factureHead), 0, "L");
+        $this->MultiCell(95, 8, iconv('UTF-8', 'windows-1252', str_replace($this->wrongChars, $this->rightChars, $factureHead)), 0, "L");
 
     }
 
@@ -120,6 +165,7 @@ class pdfFacture extends FPDF
         $this->cell(20, 5, $this->facture->shippingMethod != null ? ($this->facture->shippingMethod->is_letter ? "Letter" : "Online") : "", "L", 0, "C");
         $this->cell(20, 5, $this->facture->shippingMethod != null ? ($this->facture->shippingMethod->is_insured ? "Insured" : "") : "", "L", 0, "C");
         $this->cell(20, 5, $this->facture->shippingMethod != null ? $this->facture->shippingMethod->price : "", "LR", 1, "C");
+        $this->tva[21] += $this->facture->shippingMethod->price;
         $this->cell(0, 0, '', 1, 1);
 
     }
@@ -135,39 +181,63 @@ class pdfFacture extends FPDF
     private function showItemsTable()
     {
         $i = 0;
+        $page = 0;
         foreach ($this->facture->items as $item) {
             $i++;
             $this->showItemRow($item);
-            if ($i == 33) {
+            $key = $item->stock->is_new ? 21 : 0;
+            $this->tva[$key] += $item->quantity * $item->price;
+            if ($i == $this->perPage) {
+                $page++;
                 $this->cell(0, 0, '', 1, 1);
-                $this->showFooter();
+                $this->showFooter($page, ceil($this->facture->items->count()/$this->perPage));
+                $this->newThankPage();
                 $this->newPage();
                 $i = 0;
             }
         }
-        for (; $i <= 32; $i++)
+        for (; $i < $this->perPage; $i++)
             $this->showItemRow(null);
         $this->cell(0, 0, '', 1, 1);
 
         $this->showShipping();
         $this->showTotal();
+        $this->showTVATable();
+    }
+
+    private function showTVATable(){
+        if ($this->tva[0] > 0) {
+            $this->cell(20, 5, 'Order contains used items sold under', 0, 1);
+            $this->cell(20, 5, iconv('UTF-8', 'windows-1252','Special regime according to § 90 TAX law for taxation of surcharge in Czechia'), 0, 1);
+            $this->cell(0, 5, '', 0, 1);
+        }
+        $this->cell(20, 5, 'TVA %', 1);
+        $this->cell(20, 5, 'Base', 1);
+        $this->cell(25, 5, 'TVA value', 1, 1);
+        foreach($this->tva as $tva => $value) {
+            $this->cell(20, 5, $tva . '%', 1);
+            $this->cell(20, 5, $value, 1);
+            $this->cell(25, 5, round($value / 121 * $tva, 2), 1, 1);
+
+        }
     }
 
     private function showTableHead()
     {
         $this->cell(15, 6, "Exp.", 1);
-        $this->cell(100, 6, "Product", 1);
+        $this->cell(85, 6, "Product", 1);
         $this->cell(15, 6, "Cond.", 1);
         $this->cell(15, 6, "Extra", 1);
         $this->cell(15, 6, "P./U.", 1);
         $this->cell(15, 6, "Quant.", 1);
+        $this->cell(15, 6, "TVA", 1);
         $this->cell(15, 6, "Price", 1, 1);
     }
 
     private function showItemRow($item)
     {
         $this->cell(15, 5, ($item != null && isset($item->stock->product->expansion) && $item->stock->product->expansion != null) ? $item->stock->product->expansion->sign : "", "L");
-        $this->cell(100, 5, $item != null && isset($item->stock->product) ? $item->stock->product->name : "", "L");
+        $this->cell(85, 5, $item != null && isset($item->stock->product) ? $item->stock->product->name : "", "L");
         $this->cell(15, 5, $item != null ? $item->stock->state : "", "L", 0, "C");
         $this->cell(15, 5, $item != null ? ($item->stock->isFoil ? "F" : "") .
             ($item->stock->playset ? "P" : "") .
@@ -175,6 +245,7 @@ class pdfFacture extends FPDF
             ($item->stock->signed ? "S" : "") : "", "L", 0, "C");
         $this->cell(15, 5, $item != null ? $item->price : "", "L", 0, "C");
         $this->cell(15, 5, $item != null ? $item->quantity : "", "L", 0, "C");
+        $this->cell(15, 5, $item != null ? $item->stock->is_new ? "21%" : "0%" : "", "L", 0, "C");
         $this->cell(15, 5, $item != null ? $item->price * $item->quantity : "", "LR", 1, "C");
     }
 
@@ -184,7 +255,7 @@ class pdfFacture extends FPDF
             ($address->name . "\n"
                 . ($address->extra != null ? $address->extra . "\n" : '')
                 . $address->street . ($address->number != null && $address->flat != null
-                    ? $address->number . "/" . $address->flat
+                    ? $address->number . "/" . $address->flat . "\n"
                     : ($address->number != null
                         ? $address->number
                         : ($address->flat != null
@@ -203,14 +274,14 @@ class pdfFacture extends FPDF
 
     private function getFactureHeadString()
     {
-        return "F" . substr($this->facture->status->date_paid, 2, 2) . "" . str_pad($this->facture->id, 5, "0", STR_PAD_LEFT) . "\n"
+        return ($this->facture->idOrderMKM ? "F" : "FS") . $this->facture->invoice_no . "\n"
             . "Ordered:\t" . substr($this->facture->status->date_bought, 0, 10) . "\n"
             . "Paid:\t" . substr($this->facture->status->date_paid, 0, 10) . "\n\n";
     }
 
-    private function showFooter()
+    private function showFooter($page, $count)
     {
-        $this->cell(0, 5, "page", 0, 1, "C");
+        $this->cell(0, 5, "page " . $page . '/' . $count, 0, 1, "C");
     }
 
 }

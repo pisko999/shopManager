@@ -18,7 +18,15 @@
                                     <td>{{$card->scryfallCollectorNumber}}</td>
                                     <td>{{$card->name}}</td>
                                     <td>{{$card->quantity}}</td>
-                                    <td>{{Form::text('quantity'. $card->id,0,['id'=>'quantity'.$card->id])}}</td>
+                                    <td>
+{{--                                        {{Form::text('quantity_po_'. $card->id,0,['id'=>'quantity_po_'.$card->id, 'style' => 'width:20px;background-color:#dc3545'])}}--}}
+{{--                                        {{Form::text('quantity_pl_'. $card->id,0,['id'=>'quantity_pl_'.$card->id, 'style' => 'width:20px;background-color:#e56773'])}}--}}
+{{--                                        {{Form::text('quantity_lp_'. $card->id,0,['id'=>'quantity_lp_'.$card->id, 'style' => 'width:20px;background-color:#fd8a2b'])}}--}}
+{{--                                        {{Form::text('quantity_gd_'. $card->id,0,['id'=>'quantity_gd_'.$card->id, 'style' => 'width:20px;background-color:#ffc107'])}}--}}
+{{--                                        {{Form::text('quantity_ex_'. $card->id,0,['id'=>'quantity_ex_'.$card->id, 'style' => 'width:20px;background-color:#82891e'])}}--}}
+                                        {{Form::text('quantity_nm_'. $card->id,0,['id'=>'quantity_nm_'.$card->id, 'style' => 'width:20px;background-color:#3daf57'])}}
+{{--                                        {{Form::text('quantity_mt_'. $card->id,0,['id'=>'quantity_mt_'.$card->id, 'style' => 'width:20px;background-color:#17a2b8'])}}--}}
+                                    </td>
                                     <td>
                                         <button type="button" class="btnDecrease" data-id="{{$card->id}}">-</button>
                                     </td>

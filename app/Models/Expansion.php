@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Expansion extends Model
 {
 
-    protected $fillable = ['idMKM', 'name', 'symbol_path', 'sign', 'type', 'release_date', 'isReleased', 'added', 'update'];
+    protected $fillable = ['idMKM', 'name', 'symbol_path', 'sign', 'type', 'release_date', 'isReleased', 'added', 'update', 'idGame'];
 
     public $timestamps = false;
 
@@ -38,6 +38,16 @@ class Expansion extends Model
         return $this->AllProducts()->where('idCategory', 1);
     }
 
+    public function AllCardsWithStock()
+    {
+        return $this->AllProducts()->where('idCategory', 1)->with('stock');
+    }
+
+    public function AllCardsWithStockAndItems()
+    {
+        return $this->AllProducts()->where('idCategory', 1)->with('stock', 'stock.items');
+    }
+
     public function AllCardsWithBasicRelations()
     {
         $lands = ['Plains', 'Island', 'Swamp', 'Mountain', 'Forest'];
@@ -50,7 +60,6 @@ class Expansion extends Model
                 });
             })
             */->join('cards', 'cards.id', '=', 'all_products.id')
-            ->with('card', 'card.colors', 'card.rarity', 'card.cardFaces', 'card.types')
             ->orderByRaw('LENGTH(cards.scryfallCollectorNumber)')
             ->orderBy('cards.scryfallCollectorNumber');
     }
@@ -83,11 +92,11 @@ class Expansion extends Model
     public function getStockWithRelationsPaginate($foil=0,$n = 50)
     {
         return Stock::whereIn('all_product_id', $this->getCardsIds())
-            ->where('isFoil',$foil)
+            ->where('isFoil', $foil)
             ->join('cards', 'cards.id', '=', 'stocks.all_product_id')
             ->select('stocks.*', 'cards.scryfallCollectorNumber')
             ->with('card', 'product', 'image', 'product.image', 'card.rarity')
-            ->orderByRaw('LENGTH(cards.scryfallCollectorNumber)', 'ASC')
+            ->orderByRaw('LENGTH(cards.scryfallCollectorNumber)')
             ->orderBy('cards.scryfallCollectorNumber')
             ->paginate($n)
             ->appends(request()->only('id', 'foils'));

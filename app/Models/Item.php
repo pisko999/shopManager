@@ -19,4 +19,9 @@ class Item extends Model
     {
         return $this->belongsTo('App\Models\Stock');
     }
+
+    public function buyItems()
+    {
+        return $this->belongsToMany('App\Models\BuyItem','buy_item_items', 'id_item', 'id_buy_item')->withPivot('quantity');
+    }
 }

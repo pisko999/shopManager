@@ -16,4 +16,8 @@ interface ExpansionRepositoryInterface extends ModelRepositoryInterface
     public function getLinked();
     public function getByMKMId($id);
     public function getAllByReleased();
+
+    public function getAllGrouped($column);
+    public function getByIds($Ids);
+    public function getBySign($sign);
 }
