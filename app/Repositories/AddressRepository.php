@@ -27,8 +27,9 @@ class AddressRepository extends ModelRepository implements AddressRepositoryInte
         $this->model = $address;
     }
 
-    public function createFromMKM($data){
-        return $this->model->firstOrNew([
+    public function createFromMKM($user_id, $data){
+        return $this->model->firstOrCreate([
+	    'user_id' => $user_id,
             'name' => $data->name,
             'extra' => $data->extra,
             'street' => $data->street,

@@ -24,6 +24,7 @@ class StockFileItem
     public $onSale;
     public $idCurrency;
     public $currencyCode;
+    public $new;
 
     public function __construct($data)
     {
@@ -36,12 +37,15 @@ class StockFileItem
         $this->price = $data[6];
         $this->language = $data[7];
         $this->condition = $data[8];
-        $this->foil = $data[9] == "X" ? 1 : 0;
-        $this->signed = $data[10] == "X" ? 1 : 0;
-        $this->playset = $data[11] == "X" ? 1 : 0;
-        $this->altered = $data[12] == "X" ? 1 : 0;
+        $this->foil = $data[9] == "1" ? 1 : 0;
+        $this->signed = $data[10] == "1" ? 1 : 0;
+        $this->playset = $data[11] == "1" ? 1 : 0;
+        $this->altered = $data[12] == "1" ? 1 : 0;
         if ($data[13] != "Ask for scans")
             $this->comments = $data[13];
+	if (!empty($data[13]) && strpos("new", strtolower($data[13])) !== false) {
+	    $this->new = 1;
+	}
         $this->amount = $data[14];
         $this->onSale = $data[15];
         $this->idCurrency = $data[16];

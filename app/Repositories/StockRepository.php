@@ -14,7 +14,7 @@ use App\Models\Image;
 use App\Models\Image_stock;
 use App\Models\Language;
 use App\Models\Stock;
-use App\Models\Product;
+use App\Models\AllProduct;
 use App\Objects\StockFileItem;
 use App\Services\MKMService;
 
@@ -25,7 +25,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
     public function __construct(Stock $stock)
     {
         $this->model = $stock;
-        $this->languagesIds = collect();
+        $this->languagesIds = Language::get('id');
     }
 
     /*
@@ -86,8 +86,9 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
         ]);
     }
 
-    public function addFromMKM($data)
+    public function addFromMKM($data, $is_new)
     {
+echo "isNew in stockRepository: " . $is_new;
         $stock = $this->model->firstOrCreate(
             [
                 'idArticleMKM' => $data->idArticle,
@@ -98,16 +99,17 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
                 'price' => $data->price,
                 'stock' => $data->price > 1.97 ? 3 : ($data->price > 0.97 ? 2 : 1),
                 'language_id' => $data->language->idLanguage,
-                'isFoil' => isset($data->isFoil) ? $data->isFoil : null,
-                'signed' => isset($data->isSigned) ? $data->isSigned : null,
-                'playset' => isset($data->isPlayset) ? $data->isPlayset : null,
-                'altered' => isset($data->isAltered) ? $data->isAltered : null,
+                'isFoil' => isset($data->isFoil) ? $data->isFoil : 0,
+                'signed' => isset($data->isSigned) ? $data->isSigned : 0,
+                'playset' => isset($data->isPlayset) ? $data->isPlayset : 0,
+                'altered' => isset($data->isAltered) ? $data->isAltered : 0,
                 'state' => isset($data->condition) ? $data->condition : "NM",
                 'comments' => $data->comments,
                 'modifiedMKM' => isset($data->lastEdited) ? $data->lastEdited : null,
+                'is_new' => $is_new
             ]
         );
-
+echo " created: " . $stock->wasRecentlyCreated . "\n";
         return $stock;
     }
 
@@ -172,7 +174,8 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
                 'signed' => $item->signed == "" || $item->signed == 0 ? 0 : 1,
                 'playset' => $item->playset == "" || $item->playset == 0 ? 0 : 1,
                 'altered' => $item->altered == "" || $item->altered == 0 ? 0 : 1,
-                'stock' => $stocking
+                'stock' => $stocking,
+		'is_new' => $item->comments == 'New'
             ]
         );
 
@@ -233,7 +236,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
     }
 
 
-    public function addItem(Product $product, $request)
+    public function addItem(AllProduct $product, $request)
     {
 
         //$request['quantity']
@@ -380,7 +383,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
 
     public function getInStock()
     {
-        return $this->model->where('Quantity', '>', 0)->get();
+        return $this->model->where('Quantity', '>', 0)->whereNotNull('idArticleMKM')->get();
     }
 
     public function getInStockInArray($ids)
@@ -428,6 +431,12 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
             $item->comments = $mkmItem->comments;
         }
 
+        //language
+        if ($item->language_id != $mkmItem->language) {
+            $changed->push(['type' => 'language', [$item->id, $mkmItem->idArticle, $item->language_id]]);
+            $item->language_id = $mkmItem->language;
+        }
+
         //is on sale
         if ($item->on_sale != $mkmItem->onSale) {
             $changed->push(['type' => 'onSale', [$item->id, $mkmItem->idArticle, $item->on_sale]]);
@@ -459,6 +468,7 @@ class StockRepository extends ModelRepository implements StockRepositoryInterfac
             'playset' => isset($data->isPlayset) ? boolval($data->isPlayset) : null,
             'altered' => isset($data->isAltered) ? boolval($data->isAltered) : null,
             'state' => isset($data->condition) ? $data->condition : "NM",
+	    'comments' => $data->comments,
         ])->first();
     }
 

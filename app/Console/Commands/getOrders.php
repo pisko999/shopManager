@@ -60,19 +60,25 @@ class getOrders extends Command
         \DB::beginTransaction();
         try {
             $dateStock = \Storage::lastModified('MKMResponses/stockFile.csv');
-            $states = ['bought', 'paid', 'sent',]; // 'received', 'lost', 'cancelled'
+            $states = ['bought', 'paid', 'sent','cancelled']; // 'received', 'lost', 'cancelled'
             $orders = collect();
-            foreach ($states as $state)
+            foreach ($states as $state) {
+		if($state == 'canceled') {
+		    continue;
+		}
                 $orders = $orders->merge($this->commandRepository->getByType($state, true));
+	    }
+
 
             foreach ($states as $state) {
+		echo($state ."\n");
                 $mkmOrders = $this->MKMService->getSellerOrders($state);
+		echo ' ' . count($mkmOrders->order ?? array());
                 if (isset($mkmOrders->order))
 
 
                     foreach ($mkmOrders->order as $order) {
                         $command = $this->commandRepository->getByIdMKM($order->idOrder);
-
                         if (!$command) {
                             $command = $this->commandRepository->createFromMKM($order, $dateStock);
                             echo "Order #" . $command->idOrderMKM . " was added.\n\t" . $command->items->count() . " items added\n";
@@ -104,11 +110,12 @@ class getOrders extends Command
                 }
             }
         } catch (\Exception $e) {
-
+	    echo $e->getMessage();
             \Debugbar::info($e);
             \DB::rollBack();
             return null;
         }
+
         \DB::commit();
 
         return 0;

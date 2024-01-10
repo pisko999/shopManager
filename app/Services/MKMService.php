@@ -214,9 +214,10 @@ class MKMService
     public function saveStockFile()
     {
         $response = $this->getStockFile();
-
-        if (!isset($response->stock))
+        if (!isset($response->stock)){
+	    var_dump($response);
             return false;
+	}
 
         $stockFileCoded = $response->stock;
 
@@ -548,6 +549,8 @@ class MKMService
         curl_setopt($curlHandle, CURLOPT_HTTPHEADER, array($this->header));
         curl_setopt($curlHandle, CURLOPT_SSL_VERIFYPEER, false);
 
+curl_setopt($curlHandle, CURLOPT_PROGRESSFUNCTION, array($this, 'progress'));
+curl_setopt($curlHandle, CURLOPT_NOPROGRESS, false);
         /**
          * Execute the request, retrieve information about the request and response, and close the connection
          *
@@ -570,6 +573,14 @@ class MKMService
         return json_decode($content);
         //return simplexml_load_string($content);
     }
+
+    function progress($resource,$download_size, $downloaded, $upload_size, $uploaded)
+{
+    if($download_size > 0)
+         echo $downloaded . " " . $download_size ."\n";
+//	echo $downloaded / $download_size  * 100 ."\n";
+    sleep(1); // just to see effect
+}
 
     private function getNonce()
     {
@@ -637,7 +648,7 @@ class article extends baseArticle
     public $idLanguage = "1";
     public $comments = "";
     public $price;
-    public $condition = "MT";
+    public $condition = "NM";
     public $isFoil = "false";
     public $isSigned = "false";
     public $isAltered = "false";

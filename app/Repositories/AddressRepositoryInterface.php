@@ -16,5 +16,5 @@ use http\Env\Request;
 
 interface AddressRepositoryInterface extends ModelRepositoryInterface
 {
-    public function createFromMKM($data);
+    public function createFromMKM($user_id, $data);
 }

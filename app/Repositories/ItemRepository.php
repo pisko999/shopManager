@@ -105,9 +105,9 @@ class ItemRepository extends ModelRepository implements ItemRepositoryInterface
         foreach ($data as $article) {
             $stock = $this->stockRepository->getByValues($article);
 
-            echo $article->idProduct . ', ' . $article->product->enName . "\n";
+            echo $article->idProduct . ', ' . $article->product->enName . " isNew: " . ($stock->is_new ?? 'nema') . "\n";
 
-            $stockNew = $this->stockRepository->addFromMKM($article);
+            $stockNew = $this->stockRepository->addFromMKM($article, $stock->is_new ?? 0);
 
             $item = $this->createFromMKM($article, $stockNew, $command);
             if ($updateStock && $stock != null) {

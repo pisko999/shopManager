@@ -55,8 +55,8 @@ class checkStock extends Command
         Storage::delete('MKMResponses/stockFile.csv');
         Storage::delete('MKMResponses/stock/file/data.json');
 
-        //getting actual stock
-        $response = $this->MKMService->saveStockFile();
+        // //getting actual stock
+	$response = $this->MKMService->saveStockFile();
 
 
         // try if file exists
@@ -85,7 +85,7 @@ class checkStock extends Command
 
         //filtering collection of foils, signed, playset and altered cards to make collection smaller due to time needed
         $mkmStockFSAP = $mkmStock->filter(function ($value, $key) {
-            return $value->foil || $value->signed || $value->playset || $value->altered;
+            return $value->foil || $value->signed || $value->playset || $value->altered || $value->language != 1;
         });
 
         //filtering rest of cards
@@ -93,14 +93,21 @@ class checkStock extends Command
 
         //filtering foil, signed , playset and altered cards from server
         $stockFSAP = $stock->filter(function ($value, $key) {
-            return $value->isFoil || $value->signed || $value->playset || $value->altered;
+            return $value->isFoil || $value->signed || $value->playset || $value->altered || $value->language_id != 1;
         });
 
         //filtering rest of cards from server
         $stock = $stock->diffKeys($stockFSAP);
 
+        echo "MKM:" . count($mkmStock) . "\n";
+        echo "MKMfoil:" . count($mkmStockFSAP) . "\n";
+        echo "Store:" . count($stock) . "\n";
+        echo "StoreFoil:" . count($stockFSAP) . "\n";
+        
+
         //checking collection of normal cards
         // answer contain collection of changes with ids of changed articles
+        // $answers = collect();
         $answers = $this->checkCollections($stock, $mkmStock);
 
         //saving time after first and bigger check
@@ -116,17 +123,28 @@ class checkStock extends Command
         });
 
         // merging collections of items missing on server
+        echo "MKM:" . count($mkmStock) . "\n";
+        echo "MKMfoil:" . count($mkmStockFSAP) . "\n";
+
         $mkm = $mkmStock->merge($mkmStockFSAP);
 
         // adding all items missing on server
+        $first = true;
         foreach ($mkm as $item) {
             $response = $this->stockRepository->addFromCSV2($item);
-            var_dump($response);
+            if(!$response->wasRecentlyCreated && $item->amount != $response->quantity) {
+                $response->quantity = $item->amount;
+                $response->save();
+            }
+            if($first) {
+                var_dump($response);
+            $first = false;
+            }
         }
-        var_dump($grouped);
+//        var_dump($grouped);
         foreach ($grouped as $key => $values) {
-            foreach ($values as $value)
-                $this->stockChangeRepository->add($key, $value);
+            foreach ($values as $value){}
+            //    $this->stockChangeRepository->add($key, $value);
         }
         echo "first compare in " . ($t2 - $t1) . "s and second in " . (time() - $t2) . "s.\n";
 
@@ -164,7 +182,7 @@ class checkStock extends Command
                     $answers->push($answer);
                 $mkmItems->forget($key);
 
-                //else if article no more exists on MKM ( idmkm doesnt match to any id form MKM)
+                //else if article no more exists on MKM ( idmkm doesnt match to any id from MKM)
             } elseif ($mkmItem->count() == 0) {
                 if ($item->product == null)
                     var_dump($item);

@@ -43,10 +43,16 @@ class UserRepository extends ModelRepository implements UserRepositoryInterface
             'forename' => isset($data->name) && isset($data->name->firstName) ? $data->name->firstName : null,
             'email' => $data->idUser . '@mkm.com',
             'password' => Hash::make($data->username),
-            'deleted' => 1,
+            'deleted' => '1',
+	    'vat_id' => isset($data->vat) ? $data->vat : null,
+	    'company' => isset($data->name->company) ? $data->name->company : null,
         ]);
+	if (isset($data->vat) && $user->vat_id != $data->vat) {
+	    $user->vat_id = $data->vat;
+	    $user->save();
+	}
 
-        $user->Addresses()->save($this->addressRepository->createFromMKM($data->address));
+        $user->Addresses()->save($this->addressRepository->createFromMKM($user->id, $data->address));
 
         return $user;
     }

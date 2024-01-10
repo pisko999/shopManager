@@ -9,7 +9,7 @@
 namespace App\Repositories;
 
 use App\Http\Requests\StockAddRequest;
-use App\Models\Product;
+use App\Models\AllProduct;
 use App\Models\Stock;
 use App\Objects\StockFileItem;
 use App\Services\MKMService;
@@ -23,13 +23,15 @@ interface StockRepositoryInterface extends ModelRepositoryInterface
 
     public function addFromBuy($item);
 
-    public function addFromMKM($item);
+    public function addFromMKM($item, $is_new);
 
     public function addFromCSV($item);
 
+    public function addFromCSV2(StockFileItem $item);
+
     public function checkFromCSV($item);
 
-    public function addItem(Product $product, StockAddRequest $request);
+    public function addItem(AllProduct $product, StockAddRequest $request);
 
     public function changePrice(Stock $stock, $price);
 
@@ -49,7 +51,7 @@ interface StockRepositoryInterface extends ModelRepositoryInterface
 
     public function getInStockNotInArray($ids);
 
-    public function differentUpdate(Stock $item,StockFileItem $mkmItem);
+    public function differentUpdate(Stock $item, StockFileItem $mkmItem);
 
     public function getByIdArticleMKM($id);
     public function getByValues($data);

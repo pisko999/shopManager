@@ -234,6 +234,11 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
 
     public function createFromMKM($data, $dateStock)
     {
+	$no = date('ym', time()) . '001';
+	$max = Command::max('invoice_no');
+	if($max > $no) {
+	    $no = $max + 1;
+	}
         $this->model = new Command();
         $seller = $this->usersRepository->firstOrCreateFromMKM($data->seller);
         $buyer = $this->usersRepository->firstOrCreateFromMKM($data->buyer);
@@ -251,7 +256,7 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
         $this->model->is_presale = isset($data->isPresale) ? $data->isPresale : null;
         $this->model->article_value = $data->articleValue;
         $this->model->total_value = $data->totalValue;
-
+	$this->model->invoice_no = $no;
 
         $this->model->storekeeper()->associate($seller);
         $this->model->client()->associate($buyer);
@@ -292,6 +297,7 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
 
             if ($status->StatusName() == "paid") {
                 $shippingAddress = $this->getShippingAddress($data, $command->buyer);
+
                 $command->delivery_address()->associate($shippingAddress != null ? $shippingAddress : $command->buyer->address);
             } elseif ($status->StatusName() == "evaluated") ;
             if (isset($data->evaluation)) {
@@ -308,8 +314,9 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
             $command->temporary_email = $data->temporaryEmail;
             $changed = true;
         }
-        $address = $this->addressRepository->createFromMKM($data->shippingAddress);
-        if($address->wasRecentlyCreated){
+//        $address = $this->addressRepository->createFromMKM($command->client->id, $data->shippingAddress);
+        $address = $this->getShippingAddress($data, $command->client);
+        if($address && ($address->wasRecentlyCreated || $command->delivery_address != $address)){
             $command->delivery_address()->associate($address);
             echo "Address changed\n";
             $changed = true;
@@ -336,9 +343,11 @@ class CommandRepository extends ModelRepository implements CommandRepositoryInte
             $data->shippingAddress->city != '' ||
             $data->shippingAddress->country != ''
         ) {
-            $shippingAddress = $buyer->Addresses()->save(
-                $this->addressRepository->createFromMKM($data->shippingAddress)
-            );
+            $shippingAddress = $this->addressRepository->createFromMKM($buyer->id, $data->shippingAddress);
+	    if ($shippingAddress != null && $shippingAddress->wasRecentlyCreated) {
+		echo "buyer: " . $buyer->name . " / address: " . $data->shippingAddress->street . "\n";
+		$buyer->Addresses()->save($shippingAddress);
+	    }
         }
         return $shippingAddress;
     }
