@@ -17,10 +17,10 @@ class Conditions
     private static $conditions = array(
         'MT'=>'Mint',
         'NM'=>'Near Mint',
-        'LP'=>'Lightly Played',
-        'PL'=>'Played',
         'EX'=>'Excellent',
         'GD'=>'Good',
+        'LP'=>'Lightly Played',
+        'PL'=>'Played',
         'PO'=>'Poor',
     );
 

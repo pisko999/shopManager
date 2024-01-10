@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Stock extends Model
 {
-    protected $fillable = ['id', 'all_product_id', 'initial_price', 'quantity', 'price', 'language', 'state', 'idArticleMKM', 'stock', 'isFoil','signed','playset','altered', 'on_sale', 'comments'];
+    protected $fillable = ['id', 'all_product_id', 'initial_price', 'quantity', 'price', 'language', 'state', 'idArticleMKM', 'stock', 'isFoil','signed','playset','altered', 'on_sale', 'comments', 'update', 'is_new'];
 
     public function product()
     {
@@ -30,7 +30,7 @@ class Stock extends Model
     }
 
     public function BuyItems(){
-        return $this->hasMany('App\Models\BuyItem','id_stock','idS');
+        return $this->hasMany('App\Models\BuyItem','id_stock','id');
     }
 /*
     public function addToMKM($p)

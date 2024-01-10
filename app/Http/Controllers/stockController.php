@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Stock;
 use App\Repositories\CardRepositoryInterface;
 use App\Repositories\ExpansionRepositoryInterface;
 use App\Repositories\StockRepositoryInterface;
@@ -13,9 +14,11 @@ use Illuminate\Support\Facades\Storage;
 
 class stockController extends Controller
 {
-    public function __construct()
+    private StockRepositoryInterface $stockRepository;
+    public function __construct(StockRepositoryInterface $stockRepository)
     {
         $this->middleware('auth');
+        $this->stockRepository = $stockRepository;
     }
 
     public function getMKMStock(StockRepositoryInterface $stockRepository, MKMService $mkm)
@@ -115,7 +118,7 @@ class stockController extends Controller
 
         $stock = $expansion->getStockWithRelationsPaginate($request->foils);
         $links = $stock->render();
-        \Debugbar::info($stock);
+//        \Debugbar::info($stock);
         return view('stock.expansion', compact('expansion', 'stock', 'links'));
     }
 public function stockUpdateQuantity($id,Request $request, StockRepositoryInterface $stockRepository, StockService $stockService){
@@ -133,5 +136,20 @@ public function stockUpdateQuantity($id,Request $request, StockRepositoryInterfa
                 $result = null;
         }
         return $result;
-}
+    }
+
+    public function index(Request $request): \Illuminate\Contracts\View\View|\Illuminate\Contracts\View\Factory|\Illuminate\Auth\Access\Response|bool|\Illuminate\Contracts\Foundation\Application
+    {
+        $stock = $this->stockRepository->getStock($request);
+        $links = $stock->render();
+        return view('stock.index', compact('stock', 'links'));
+    }
+    public function edit(int $id = null) {
+        if ($id) {
+            $stock = $this->stockRepository->getById($id);
+        } else {
+            $stock = new Stock();
+        }
+        return view('stock.edit', compact('stock'));
+    }
 }

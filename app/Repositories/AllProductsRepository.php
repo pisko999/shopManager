@@ -4,11 +4,12 @@
 namespace App\Repositories;
 
 
-use App\models\AllProduct;
-use App\models\Categories;
+use App\Models\AllProduct;
+use App\Models\Categories;
 use App\Models\Expansion;
 use App\Models\ExpansionsLocalisation;
 use App\Models\Language;
+use Illuminate\Http\Request;
 
 class AllProductsRepository extends ModelRepository implements AllProductsRepositoryInterface
 {
@@ -42,5 +43,11 @@ class AllProductsRepository extends ModelRepository implements AllProductsReposi
 
         //return $newAllProduct;
         return;
+    }
+    public function search(Request $request) {
+        if($request->input('name')) {
+            return $this->model->where('name', 'like', '%' . $request->input('name') . '%')->paginate(10);
+        }
+        return null;
     }
 }

@@ -9,6 +9,8 @@
 namespace App\Repositories;
 
 
+use Illuminate\Database\Eloquent\Collection;
+
 abstract class ModelRepository implements ModelRepositoryInterface
 {
     protected $model;
@@ -18,7 +20,7 @@ abstract class ModelRepository implements ModelRepositoryInterface
         return $this->model->paginate($n);
     }
 
-    public function getAll()
+    public function getAll(): Collection
     {
         return $this->model->all();
     }

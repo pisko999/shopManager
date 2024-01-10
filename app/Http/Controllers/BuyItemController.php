@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\BuyItem;
+use App\Libraries\PriceLibrary;
 use App\Repositories\BuyCommandRepositoryInterface;
 use App\Repositories\BuyItemRepositoryInterface;
 use Illuminate\Http\Request;
@@ -97,12 +98,16 @@ class BuyItemController extends Controller
      */
     public function update($id, Request $request)
     {
+        \Debugbar::info($request);
+//        \Debugbar::info($request->all());
         if ($request->action == '+')
             $answer = $this->buyItemRepository->increase($id, $request->all());
         elseif ($request->action == '-')
             $answer = $this->buyItemRepository->decrease($id, $request->all());
         elseif ($request->action == 'x')
             $answer = $this->buyItemRepository->remove($id);
+        elseif ($request->action == '/')
+            $answer = $this->buyItemRepository->separate($id, $request->all());
         elseif($request->action == 'price')
             $answer = $this->buyItemRepository->setPrice($id, $request->all());
         else
@@ -116,6 +121,7 @@ class BuyItemController extends Controller
         if(!$item)
             abort(404);
         $item->state = $state;
+        $item->price = PriceLibrary::getProductRebuyPrice($item->product, $item->isFoil, $state);
         $item->save();
         return $item;
     }

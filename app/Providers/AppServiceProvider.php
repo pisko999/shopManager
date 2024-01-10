@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Repositories\GiftRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -13,6 +14,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
+
+        $this->app->bind(
+            'App\Repositories\GiftListRepositoryInterface',
+            'App\Repositories\GiftListRepository'
+        );
+
+        $this->app->bind(
+            'App\Repositories\GiftItemRepositoryInterface',
+            'App\Repositories\GiftItemRepository'
+        );
 
         $this->app->bind(
             'App\Repositories\DeckRepositoryInterface',
@@ -90,6 +101,16 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(
             'App\Repositories\CardRepositoryInterface',
             'App\Repositories\CardRepository'
+        );
+
+        $this->app->bind(
+            'App\Repositories\AllProductsRepositoryInterface',
+            'App\Repositories\AllProductsRepository'
+        );
+
+        $this->app->bind(
+            'App\Repositories\GiftRepositoryInterface',
+            'App\Repositories\GiftRepository'
         );
     }
 

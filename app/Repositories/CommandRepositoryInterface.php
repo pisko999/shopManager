@@ -41,7 +41,7 @@ interface CommandRepositoryInterface
 
     public function confirm(Request $request);
 
-    public function getCommandsPaginate($type);
+    public function getCommandsPaginate($type, $presale = false);
 
     public function createFromMKM($data, $dateStock);
 
@@ -59,4 +59,9 @@ interface CommandRepositoryInterface
 
     public function setTrackingNumber($id, $trackingNumber);
 
+    public function addGift($id, $count);
+
+    public function getSoldByMonth($month, $year);
+
+    public function getBoughtInstoreByMonth($month, $year);
 }

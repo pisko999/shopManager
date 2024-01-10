@@ -11,4 +11,6 @@ interface BuyCommandRepositoryInterface extends ModelRepositoryInterface
     public function new();
 
     public function saveEdition($data);
+    public function getBoughtByMonth($month, $year);
+    public function getBoughtFromSroBeginning($month, $year);
 }

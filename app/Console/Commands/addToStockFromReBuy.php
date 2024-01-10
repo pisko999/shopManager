@@ -77,14 +77,16 @@ class addToStockFromReBuy extends Command
 
                 if (isset($stock->error))
                     array_push($errors, $stock->error);
-                if ($stock->quantity > 20)
-                    array_push($messages, $stock);
+                //if ($stock->quantity > 20)
+                //   array_push($messages, $stock);
                 $total += $stock->price * $item->quantity;
             }
             foreach($messages as $message) {
+                echo "messages\n";
                 var_dump($message);
             }
             foreach ($errors as $error) {
+                echo "errors\n";
                 var_dump($error);
             }
             $this->buyCommandRepository->setValue($buyCommand, $total);

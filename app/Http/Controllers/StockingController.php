@@ -36,10 +36,12 @@ class StockingController extends Controller
 
     public function stockingEditionGet1(Request $request)
     {
+        ini_set('memory_limit','512M');
         $expansion = $this->expansionRepository->getByMKMId($request->id);
         $cards = $expansion->AllCardsWithBasicRelations;
         $max = ceil($cards->count() / 5);
-        return view('showStocking2', compact('max', 'cards', 'expansion'));
+        $foil = $request->foils == 1;
+        return view('showStocking2', compact('max', 'cards', 'expansion', 'foil'));
     }
 
     public function stockingEditionGet(Request $request)

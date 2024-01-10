@@ -11,17 +11,26 @@
 
     <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}" defer></script>
-    <script src="{{ asset('js/base.js') }}" defer></script>
+    <script src="{{ asset('js/base.js?t=' . time()) }}" defer></script>
+    <script src="{{ asset('js/searchInput.js?t=' . time()) }}" defer></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.0/js/toastr.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/dt-1.13.8/datatables.min.js"></script>
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 @yield('scripts')
 
 <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.0/css/toastr.css" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/v/dt/dt-1.13.8/datatables.min.css" rel="stylesheet">
 
     <!-- Styles -->
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/app.css?t=' . time()) }}" rel="stylesheet">
+    <link href="{{ asset('css/my.css?t=' . time()) }}" rel="stylesheet">
+    <link href="{{ asset('css/searchInput.css?t=' . time()) }}" rel="stylesheet">
     @yield('css')
 </head>
 <body>
@@ -80,7 +89,7 @@
                                 {{ Auth::user()->name }} <span class="caret"></span>
                             </a>
 
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+{{--                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">--}}
                                 <a class="dropdown-item" href="{{ route('logout') }}"
                                    onclick="event.preventDefault();
                                                      document.getElementById('logout-form').submit();">
@@ -91,7 +100,7 @@
                                       style="display: none;">
                                     @csrf
                                 </form>
-                            </div>
+{{--                            </div>--}}
                         </li>
                     @endguest
                 </ul>
@@ -211,12 +220,41 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="{!! route('expansions')!!}">
+                            <div>
+                                Expansions
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{!! route('expansion.card')!!}" target="_blank">
+                            <div>
+                                Expansion Cards
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <button data-target="#ModalCheckOrderMKM" data-toggle="modal"
                                 id="btnCheckOrderMKM">
-                                Check MKM order
+                            Check MKM order
                         </button>
                     </li>
                     <hr/>
+                    <li class="nav-item">
+                        <a href="{!! route('giftList.index')!!}">
+                            <div>
+                                Gift Lists
+                            </div>
+                        </a>
+                    </li>
+                    <hr/>
+                    <li class="nav-item">
+                        <a href="{!! route('stock.index')!!}">
+                            <div>
+                                Stock
+                            </div>
+                        </a>
+                    </li>
                 </ul>
 
             </div>
@@ -228,6 +266,7 @@
     </main>
 </div>
 @include('modals.checkOrderMKM')
+
 </body>
 <script>
     $(document).on('click', '#setPdfAddressesPosition', function (e) {

@@ -19,6 +19,7 @@ if (!isset($items))
         <th>Price p.u.</th>
         <th>Quantity</th>
         <th>Price</th>
+        <th>VAT type</th>
         @if(!Auth::guest() && Auth::user()->role >= 4 && !$printable)
             <th>Actions</th>
         @endif
@@ -31,9 +32,11 @@ if (!isset($items))
         <tr>
             <td>
 
-                <a href="{!! route('shopping.show', ['id'=>$item->stock->all_product_id])  !!}">
+                <a href="{!! route('shopping.show', ['id'=>$item->stock->all_product_id])  !!}" data-toggle="tooltip" title='<img src="https://www.mtgforfun.cz/storage/{{$item->stock->product->image->path}}" width="250px">'>
                     {{isset($item->stock->product)?($item->stock->product->name . ( $item->stock->isFoil == 1 ? ' - foil': '')):'token?'}}
                 </a>
+
+
 
             </td>
             <td>{{$item->stock->product->expansion->sign}}</td>
@@ -41,6 +44,7 @@ if (!isset($items))
             <td>{{$item->price}}</td>
             <td>{{$item->quantity}}</td>
             <td>{{$item->price * $item->quantity}}</td>
+            <td>{{$item->stock->is_new ? 'new' : 'used'}}</td>
             @if(isset($cart))
                 <td>
                     {!! Form::open(['route' => 'cart.remove', 'id' => 'form' . (isset($item->id)?$item->id: '')]) !!}

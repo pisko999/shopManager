@@ -20,7 +20,7 @@ class StockService
             $this->MKMService = new MKMService();
     }
 
-    public function addFromBuy($buyItem)
+    public function addFromBuy($buyItem, $presale = false)
     {
         $stock = $this->stockRepository->addFromBuy($buyItem);
         $doesnExist = false;
@@ -74,8 +74,8 @@ class StockService
                 $price = $priceGuide != null ?
                     \App\Libraries\PriceLibrary::getPrice(
                         $buyItem->isFoil ?
-                            $priceGuide->foilTrend :
-                            $priceGuide->trend,
+                            ($priceGuide->foilTrend + $priceGuide->foilAvgOne + $priceGuide->foilAvgSeven) / 3 :
+                            ($priceGuide->trend + $priceGuide->avgOne + $priceGuide->avgSeven) / 3,
                         \App\Libraries\PriceLibrary::Eur,
                         \App\Libraries\PriceLibrary::Eur
                     )
@@ -86,6 +86,10 @@ class StockService
                     :
                     $price = $buyItem->card->usd_price
                 );
+                $lowPriceName = $buyItem->isFoil ? 'foilLow' : 'lov';
+                if ($priceGuide != null && $price < $priceGuide->$lowPriceName) {
+                    $price = 1.2 * $priceGuide->$lowPriceName;
+                }
 
                 if ($price != null) {
                     $mkmStock = $this->MKMService->addToStock(
@@ -94,7 +98,7 @@ class StockService
                         $price,
                         $buyItem->state,
                         $buyItem->id_language,
-                        '',
+                        $buyItem->is_new? 'New' : '',
                         $buyItem->isFoil ? 'true' : 'false',
                         $buyItem->signed ? 'true' : 'false',
                         $buyItem->altered ? 'true' : 'false',
@@ -112,7 +116,7 @@ class StockService
                             //TODO: use $session
                             if (isset($stock->error)) {
                                 $error = $stock->error;
-                                $stock->remove(error);
+                                $stock->remove($error);
                                 $stock->save();
                                 $stock->error = $error;
                             } else
@@ -250,5 +254,10 @@ class StockService
         return $stock;
     }
 
-
+    public function deleteMany( $items) {
+        var_dump($this->MKMService->deleteManyFromStock($items));
+        foreach ($items as $item) {
+            $item->delete();
+        }
+    }
 }

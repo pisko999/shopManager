@@ -13,6 +13,7 @@ use App\Models\AllProduct;
 use App\Models\Stock;
 use App\Objects\StockFileItem;
 use App\Services\MKMService;
+use Illuminate\Http\Request;
 
 
 interface StockRepositoryInterface extends ModelRepositoryInterface
@@ -55,4 +56,5 @@ interface StockRepositoryInterface extends ModelRepositoryInterface
 
     public function getByIdArticleMKM($id);
     public function getByValues($data);
+    public function getStock(Request $request);
 }

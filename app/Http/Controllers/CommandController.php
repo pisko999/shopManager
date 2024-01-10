@@ -9,6 +9,7 @@ use App\Objects\pdfFacture;
 use App\Objects\Status;
 use App\Repositories\CommandRepositoryInterface;
 use App\Http\Controllers\Controller;
+use App\Repositories\GiftItemRepositoryInterface;
 use App\Repositories\StatusNamesRepositoryInterface;
 use App\Services\messagerieService;
 use Illuminate\Http\Request;
@@ -16,15 +17,20 @@ use Illuminate\Http\Request;
 class CommandController extends Controller
 {
     protected $commandRepository;
+    protected $giftItemRepository;
 
-    public function __construct(CommandRepositoryInterface $commandRepository)
-    {
+    public function __construct(
+        CommandRepositoryInterface $commandRepository,
+    GiftItemRepositoryInterface $giftItemRepository
+    ) {
         $this->commandRepository = $commandRepository;
+        $this->giftItemRepository = $giftItemRepository;
         $this->middleware('auth');
     }
 
     public function showCommand($id){
         $command = $this->commandRepository->getById($id);
+        \Debugbar::info($command->delivery_address);
         return view('command.show', compact('command'));
     }
 
@@ -41,14 +47,15 @@ class CommandController extends Controller
             $commandType = 2;
         else
             $commandType = $request->commandType;
+        $presale = isset($request->presale);
 
         $statusNames = $statusNamesRepository->getAll();
 
-        $commands = $this->commandRepository->getCommandsPaginate($commandType);
+        $commands = $this->commandRepository->getCommandsPaginate($commandType, $presale);
         $commands->appends($request->except('page'));
         \Debugbar::info($commands);
         $links = $commands->render();
-        return view('command.index', compact('commands', 'links', 'statusNames', 'commandType'));
+        return view('command.index', compact('commands', 'links', 'statusNames', 'commandType', 'presale'));
     }
 
     public function trackingNumber(Request $request){
@@ -132,6 +139,7 @@ class CommandController extends Controller
     }
 
     public function sendAll(){
+        /*
         $commands = $this->commandRepository->getByType(Status::PAID, $onlyMKM = true);
 
         foreach ($commands as $command) {
@@ -141,6 +149,7 @@ class CommandController extends Controller
         }
 
         return redirect()->back();
+        */
     }
 
     public function checkMKM(Request $request){
@@ -163,7 +172,7 @@ class CommandController extends Controller
                 $myAddress = Address::find(1);
                 $fpdf->init($myAddress);
                 foreach ($commands as $command) {
-                    $fpdf->show($command->delivery_address);
+                    $fpdf->show($command->delivery_address, $command->shippingMethod);
                 }
                 $fpdf->Output("D", "Addresses.pdf", true);
                 break;
@@ -173,7 +182,8 @@ class CommandController extends Controller
                 foreach ($commands as $command){
                     $fpdf->show($command);
                 }
-                $fpdf->Output("D","Factures.pdf", true);                break;
+                $fpdf->Output("D","Factures.pdf", true);
+                break;
             case 'send':
 
                 foreach ($commands as $command) {
@@ -182,9 +192,28 @@ class CommandController extends Controller
                     messagerieService::successMessage('Command #'. $command->id . ' was marked as sent.');
                 }
                 return redirect()->back();
+            case 'addGift':
+                foreach ($commands as $command) {
+                    $count = 4;
+                    $countRest = $this->giftItemRepository->getItemsCount(2);
+                    if($countRest == 0) {
+                        messagerieService::successMessage('Command #' . $command->id . ': there are no more gifts.');
+                        continue;
+                    } else if ($countRest < $count) {
+                        $count = $countRest;
+                    }
+                    $added = $this->commandRepository->addGift($command->id, $count);
+                    if ($added === false) {
+                        messagerieService::successMessage('Command #' . $command->id . ' has allready gift.');
+                    } else {
+                        messagerieService::successMessage('Command #' . $command->id . ' has added ' . $added . ' gifts.');
+                    }
+                }
+                return redirect()->back();
+            case 'showGifts':
+                return view('command.showGifts', compact('commands'));
         }
 
-        //return view('home');
+        return view('home');
     }
-
 }

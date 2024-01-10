@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BuyItem extends Model
 {
-    protected $fillable = ['id_product','id_stock', 'id_buy_command', 'id_language', 'price','quantity','state','isFoil','playset','signed','altered', 'added'];
+    protected $fillable = ['id_product','id_stock', 'id_buy_command', 'id_language', 'price','quantity','state','isFoil','playset','signed','altered', 'added', 'sold_quantity', 'is_new'];
     public $timestamps = false;
 
     public function Stock(){
@@ -28,4 +28,8 @@ class BuyItem extends Model
         return $this->belongsTo('App\Models\Language', 'id_language','id');
     }
 
+    public function items()
+    {
+        return $this->belongsToMany('App\Models\Item','buy_item_items', 'id_buy_item', 'id_item')->withPivot('quantity');
+    }
 }

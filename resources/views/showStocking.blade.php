@@ -39,8 +39,9 @@
                         <td style="background-color: {{$d}}; border: 1px black solid; padding: 0px; margin: 0px">{{$col[$color][$i]->scryfallCollectorNumber}}</td>
                         <td style="background-color: {{$c}}; border: 1px black solid; padding: 0px; margin: 0px">{{explode('//',$col[$color][$i]->name)[0]}}</td>
                         <td style="border: 1px black solid; padding: 0px; margin: 0px; width: 16px;"></td>
+                        <td style="width: 10px"></td>
                     @else
-                        <td colspan="3"></td>
+                        <td colspan="4"></td>
                     @endif
                 @endforeach
             </tr>
@@ -95,8 +96,9 @@
                         <td style="background-color: {{$d}}; border: 1px black solid; padding: 0px; margin: 0px">{{$col['multicolor'][$i + $j * $m]->scryfallCollectorNumber}}</td>
                         <td style="background-color: {{$c}}; border: 1px black solid; padding: 0px; margin: 0px">{{$col['multicolor'][$i + $j * $m]->name}}</td>
                         <td style="border: 1px black solid; padding: 0px; margin: 0px; width: 16px;"></td>
+                        <td style="width: 10px"></td>
                     @else
-                        <td colspan="3"></td>
+                        <td colspan="4"></td>
                     @endif
                 @endfor
                 @for($k=0;$k<$b;$k++)
@@ -129,8 +131,9 @@
                         <td style="background-color: {{$d}}; border: 1px black solid; padding: 0px; margin: 0px">{{$col['artifact'][$i + $k * $m]->scryfallCollectorNumber}}</td>
                         <td style="background-color: {{$c}}; border: 1px black solid; padding: 0px; margin: 0px">{{$col['artifact'][$i + $k * $m]->name}}</td>
                         <td style="border: 1px black solid; padding: 0px; margin: 0px; width: 16px;"></td>
+                        <td style="width: 10px"></td>
                     @else
-                        <td colspan="3"></td>
+                        <td colspan="4"></td>
                     @endif
                 @endfor
             </tr>
@@ -167,8 +170,9 @@
                         <td style="background-color: {{$d}}; border: 1px black solid; padding: 0px; margin: 0px">{{$col['lands'][$i * 5 + $j]->scryfallCollectorNumber}}</td>
                         <td style="background-color: {{$c}}; border: 1px black solid; padding: 0px; margin: 0px">{{$col['lands'][$i * 5 + $j]->name}}</td>
                         <td style="border: 1px black solid; padding: 0px; margin: 0px; width: 16px;"></td>
+                        <td style="width: 10px"></td>
                     @else
-                        <td colspan="3"></td>
+                        <td colspan="4"></td>
                     @endif
                 @endfor
             </tr>

@@ -57,7 +57,8 @@
                     _token: "{{csrf_token()}}",
                 },
                 success: function (answer) {
-                    alert("changed");
+                    $('#formPrice'+answer.id+' #inputPrice').val(answer.price);
+                    toastr.success("changed");
                 },
                 error: function (answer) {
                     alert(answer);
@@ -72,6 +73,9 @@
             var val = e.originalEvent.submitter.value;
             var data = form.serialize();
             var dataArray = form.serializeArray();
+            if (val == '+') {
+                val = "%2B";
+            }
             data += '&action=' + val;
             var id = dataArray[1].value;
 
@@ -89,23 +93,50 @@
                 success: function (response) {
                     if (response == "false")
                         alert(Error);
-                    else if (val == 'remove' || (val == 'decrease' && response <= 0)) {
-                        tv.text((tv.text() - (pu.text() * quant.text() * ratioP)).toFixed(2));
+                    else if (val == 'x' || (val == '-' && response <= 0)) {
+                        if (ratioP != NaN) {
+                            tv.text((tv.text() - (pu.text() * quant.text() * ratioP)).toFixed(2));
+                        }
                         tp.text((tp.text() - (pu.text() * quant.text())).toFixed(2));
-                        console.log(pt.text());
                         el.empty();
                         el.remove();
 
-                    } else if (val == 'decrease') {
-                        tv.text((tv.text() - ((quant.text() - response) * pu.text()) * ratioP).toFixed(2));
+                    } else if (val == '-') {
+                        if (ratioP != NaN) {
+                            tv.text((tv.text() - ((quant.text() - response) * pu.text()) * ratioP).toFixed(2));
+                        }
                         tp.text((tp.text() - ((quant.text() - response) * pu.text())).toFixed(2));
                         quant.text(response);
                         pt.text((pu.text() * response).toFixed(2));
+                    } else if (val == '/' && response != "") {
+                        quant.text(quant.text() - response.quantity);
+                        var newel = el.clone();
+                        newel.data('id', response.id);
+                        newel.find('#tdId').text(response.id);
+                        newel.find('#tdState').data('id', response.id);
+                        ntdpu = newel.find('#tdPU');
+                        ntdpu.data('id', response.id);
+                        nf = ntdpu.find('form');
+                        nf.attr('id', 'formPrice' + response.id);
+                        nf.attr('action', 'http://manager.cz/BuyItemUpdate/' + response.id);
+                        newel.find('#tdQuantity').data('id', response.id).text(response.quantity);
+                        newel.find('#tdPT').data('id', response.id).text(response.quantity * response.price);
+                        newel.find('#tdVPU').data('id', response.id);
+                        ntf = newel.find('#tdForm form');
+                        ntf.attr('id', 'form' + response.id);
+                        ntf.attr('action', 'http://manager.cz/BuyItemUpdate/' + response.id);
+                        ntf.find('input[name="id"').value = response.id;
+                        ntf.find('select').val(response.quantity);
+                        el.after(newel);
+                    } else if (val == '/') {
+
                     } else {
-                        tv.text((tv.text() + ((response - quant.text()) * pu.text()) * ratioP).toFixed(2));
-                        tp.text((tp.text() + ((response - quant.text()) * pu.text())).toFixed(2));
                         quant.text(response);
-                        pt.text((pu.text() * response).toFixed(2));
+                        if (ratioP != NaN) {
+                            tv.text((tv.text() + ((response - quant.text()) * pu.text()) * ratioP).toFixed(2));
+                            tp.text((tp.text() + ((response - quant.text()) * pu.text())).toFixed(2));
+                            pt.text((pu.text() * response).toFixed(2));
+                        }
                     }
                 }
             });

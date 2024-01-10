@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="container">
+    <div class="">
         <div class="row justify-content-center">
             <div class="col-md-12">
                 <div class="card">
@@ -13,60 +13,62 @@
                                 {{ session('status') }}
                             </div>
                         @endif--}}
-                        <div class="row">
+                        <div class="row mb-2">
                             <div class="col-4">
-                                <div class="btn btn-success actions" data-action="send">send</div>
                                 <div class="btn btn-success actions" data-action="facture">facture</div>
                                 <div class="btn btn-success actions" data-action="address">address</div>
+                                <div class="btn btn-success actions mr-auto" data-action="addGift">Add gift</div>
+                                <div class="btn btn-success actions mr-auto" data-action="showGifts">Show gifts</div>
                             </div>
                             <div class="col-4 ">
-                                {{Form::open(['method'=>'get'])}}
-                                <label for="commandType">Type: </label>
-                                <select id="commandType" name="commandType">
-                                    <option value="all" selected>All</option>
-                                    @foreach($statusNames as $statusName)
-                                        <option
-                                            value="{{$statusName->id}}" {{$commandType == $statusName->id ? "selected":''}}>{{$statusName->name}}</option>
-                                    @endforeach
-                                </select>
-                                <button type="submit">Submit</button>
+                                {{Form::open(['method'=>'get', 'class' => 'form-inline'])}}
+                                    <label class="mx-2" for="commandType">Type: </label>
+                                    <select class="form-control mx-2" id="commandType" name="commandType">
+                                        <option value="all" selected>All</option>
+                                        @foreach($statusNames as $statusName)
+                                            <option
+                                                value="{{$statusName->id}}" {{$commandType == $statusName->id ? "selected":''}}>{{$statusName->name}}</option>
+                                        @endforeach
+                                    </select>
+                                    <label class="mx-2" for="presale">Presale:</label><input type="checkbox" name="presale" @if ($presale) checked="checked" @endif>
+                                    <button class="btn btn-primary mx-2" type="submit">Submit</button>
                                 {{Form::close()}}
                             </div>
                             <div class="offset-3 col-1">
-                                @if($commandType == \App\Objects\Status::PAID)
-                                    {{Form::open(['method'=>'get','route' => 'command.sendAll'])}}
-                                    {{Form::submit('sendAll',['class'=>'btn btn-success'])}}
-                                    {{Form::close()}}
-                                @endif
-
+                                <div class="btn btn-success actions" data-action="send">send</div>
                             </div>
                         </div>
                         {!! $links !!}
                         {{Form::open(['method'=>'get', 'route' => 'command.action', 'id' => 'formCommands'])}}
                         {{Form::hidden('action','',['id' => 'action'])}}
 
-                        <table style="align: center; width: 100%">
+                        <table class="table table-striped table-hover table-sm" style="align: center; width: 100%">
                             <thead>
+                            <td>#</td>
                             <td><input type="checkbox" id="chbSelectAll" /></td>
                             <td>id</td>
                             <td>date</td>
                             @if(!Auth::guest() && Auth::user()->role >= 4)
                                 <td>client</td>
+                                <td>name</td>
                             @endif
                             <td>items</td>
+                            <td>gifts</td>
                             <td>total</td>
                             <td>status</td>
+                            <td>shipping</td>
                             @if(!Auth::guest() && Auth::user()->role >= 4)
                                 <td>actions</td>
                             @endif
                             </thead>
-                            <tbody class="scrolling-pagination">
+                            <tbody >
                             @foreach($commands as $command)
                                 <tr>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td><input type="checkbox" class="chbCommandId" name="commandIds[]" value="{{$command->id}}" /></td>
-                                    <td class="col-md-2">
+                                    <td>
                                         <a href="{!! route('command', ['id' => $command->id])!!}">
-                                            {{$command->id}} {{$command->shipping_method_id}}
+                                            {{$command->id}}
                                         </a>
                                     </td>
                                     <td>
@@ -75,11 +77,17 @@
                                         </a>
                                     </td>
                                     @if(!Auth::guest() && Auth::user()->role >= 4)
-                                        <td>{{$command->client->mkm_username != null?$command->client->mkm_username :$command->client->name}}</td>
+                                        <td>{{$command->client->mkm_username != null?$command->client->mkm_username : $command->client->name}}</td>
+                                        <td>{{$command->billing_address?->name}}</td>
                                     @endif
                                     <td>
                                         <a href="{!! route('command', ['id' => $command->id])!!}">
                                             {{count($command->items)}}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="{!! route('command', ['id' => $command->id])!!}">
+                                            {{count($command->gifts)}}
                                         </a>
                                     </td>
                                     <td>
@@ -90,25 +98,26 @@
                                     <td>
                                         {{--                                        <a href="{!! route('payment.show', ['payment_id' => $command->payment_id])!!}">--}}
                                         {{$command->status->name->name}}
-                                        {{$command->shippingMethod != null ? $command->shippingMethod->is_insured : ''}}
-                                        {{--                                        </a>--}}
+                                    </td>
+                                    <td>
+                                        {{$command->shippingMethod?->method->name}}{{--                                        </a>--}}
                                     </td>
                                     @if(!Auth::guest() && Auth::user()->role >= 4)
                                         <td>
                                             <div class="row d-table">
                                                 <div class="col-3 d-table-cell"><a
                                                         href="{{route('commandFacture',['id' => $command->id])}}">
-                                                        <button>F</button>
+                                                        <button class="btn btn-primary">F</button>
                                                     </a>
                                                 </div>
                                                 <div class="col-3 d-table-cell">
                                                     <a href="{{route('commandAddress',['id' => $command->id])}}">
-                                                        <button>A</button>
+                                                        <button class="btn btn-secondary">A</button>
                                                     </a>
                                                 </div>
                                                 <div class="col-3 d-table-cell">
                                                     @if($command->shippingMethod != null && $command->shippingMethod->is_insured)
-                                                        <button data-target="#ModalTrackingNumber" data-toggle="modal"
+                                                        <button class="btn btn-info" data-target="#ModalTrackingNumber" data-toggle="modal"
                                                                 data-id="{{$command->id}}" id="btnTrackingNumber"
                                                                 data-tracking_number="{{$command->tracking_number}}">TN
                                                         </button>
@@ -117,13 +126,13 @@
                                                 <div class="col-3 d-table-cell">
                                                     @switch($command->getStatus())
                                                         @case("bought")
-                                                        <button class="btnPaid" data-id="{{$command->id}}">Payed</button>
+                                                        <button class="btnPaid btn btn-outline-success" data-id="{{$command->id}}">Payed</button>
                                                         @break
                                                         @case("paid")
-                                                        <button class="btnSend" data-id="{{$command->id}}">Send</button>
+                                                        <button class="btnSend btn btn-outline-success" data-id="{{$command->id}}">Send</button>
                                                         @break
                                                         @case("sent") <!--cancellationRequested-->
-                                                        <button class="btnAcceptCancelation" data-id="{{$command->id}}">
+                                                        <button class="btnAcceptCancelation btn btn-outline-success" data-id="{{$command->id}}">
                                                             Accept
                                                             Cancelation
                                                         </button>
